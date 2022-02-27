@@ -54,7 +54,9 @@ module.exports = {
     try {
       // Get the sheet and load It's cells
       let sheet = await getSheet(`${track}_DL`);
-      await sheet.loadCells();
+
+      // Range is specefied so things speeds up
+      await sheet.loadCells("A1:C50");
 
       // Get  cells to insert the task
       const taskNumberCell = sheet.getCell(task, 0);

@@ -15,8 +15,5 @@ client.once("ready", () => {
   });
 });
 
-getSheet("points").then((resolve) => {
-  console.log(resolve);
-});
 
 client.login(process.env.BOT_TOKEN);

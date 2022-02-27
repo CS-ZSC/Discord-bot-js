@@ -1,4 +1,4 @@
 node_modules
-
+helpers/sheets/creds.json
 
 *.env

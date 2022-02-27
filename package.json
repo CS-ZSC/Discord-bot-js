@@ -1,7 +1,12 @@
 {
+  "scripts": {
+    "dev": "nodemon main.js"
+  },
   "dependencies": {
     "discord.js": "^13.6.0",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "google-spreadsheet": "^3.2.0",
+    "wokcommands": "^1.5.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"

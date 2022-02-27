@@ -1,14 +1,11 @@
 const Discord = require("discord.js");
 const { getSheet } = require("./helpers/sheets/index");
+const WOKCommands = require("wokcommands");
+const path = require("path");
 require("dotenv").config();
 const client = new Discord.Client({
   intents: ["GUILDS", "GUILD_MESSAGES"],
 });
-const commandHandler = require("./command_handler.js");
-const PREFIX = "-";
-const WOKCommands = require("wokcommands");
-const path = require("path");
-const { log } = require("console");
 
 client.once("ready", () => {
   console.log("bot online");

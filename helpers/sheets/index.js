@@ -15,6 +15,23 @@ const getSheet = async (sheetName) => {
   return sheet;
 };
 
+const searchRows = (rows, columnName, searchValue) => {
+  const row = rows.filter(
+    (row) => row[columnName].toLowerCase() == searchValue.toLowerCase()
+  );
+  return row;
+};
+
+const getUserPoints = async (userId) => {
+  const sheet = await getSheet("points");
+  const rows = await sheet.getRows();
+  const columnName = "Discord Tag";
+  const searchValue = userId;
+  const userRow = searchRows(rows, columnName, searchValue);
+  return userRow;
+};
+
 module.exports = {
   getSheet,
+  getUserPoints,
 };

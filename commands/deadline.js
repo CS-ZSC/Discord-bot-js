@@ -2,8 +2,8 @@ const times = require("../helpers/time/handlers");
 const { getSheet } = require("../helpers/sheets/index");
 
 module.exports = {
-  name: "deadlinejs",
-  description: "Replies with pong", // Required for slash commands
+  name: "deadline",
+  description: "Make a deadline for specific track", // Required for slash commands
   testOnly: true,
 
   options: [

@@ -1,14 +1,17 @@
-const { getUserPoints } = require("../helpers/sheets/index");
+const { getUser } = require("../helpers/sheets/index");
+const card = require("../helpers/levelCard");
 
 module.exports = {
-  name: "points",
-  description: "Get your points", // Required for slash commands
+  name: "points1",
   testOnly: true,
-  slash: true,
-  callback: async ({ member, user }) => {
-    const userId = `${user.username} #${user.discriminator}`;
-    const userRow = await getUserPoints(userId);
-    const points = userRow[0]["Points"];
-    return `${member.user} you have ${points} points`;
+  slash: false,
+  callback: async ({ message, member, user }) => {
+    const rank = await card(message, user);
+    rank.build({ fontX: "Quantico", fontY: "Quantico" }).then((buffer) => {
+      message.reply({
+        content: `Hello ${user.username}`,
+        files: [{ attachment: buffer }],
+      });
+    });
   },
 };

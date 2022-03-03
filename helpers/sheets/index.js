@@ -52,7 +52,43 @@ const getUser = async (userId) => {
   return userRow;
 };
 
+
+const getUserPoints = async (userId) => {
+  const sheet = await getSheet("points");
+  const rows = await sheet.getRows();
+  const columnName = "Discord Tag";
+  const searchValue = userId;
+  const userRow = searchRows(rows, columnName, searchValue);
+  return userRow;
+};
+
+const getTask = async (track, task) => {
+  let sheet = await getSheet(track + "_DL");
+  let task_row = task + 1;
+  let task_col = 1;
+  sheet.loadCells({
+    startRowIndex: task_row,
+    endRowIndex: task_row + 1,
+    startColumnIndex: task_col,
+    endColumnIndex: task_col + 3,
+  });
+  let start_date_str = sheet.getCell(task_row, task_col + 1).value;
+  let end_date_str = sheet.getCell(task_row, task_col + 2).value;
+  if (end_date_str == null || start_date_str == null) {
+    // print("Task Deadline doesn't exist in the spreadsheet")
+    return null;
+  }
+  return {
+    track,
+    task,
+    startingDate: start_date_str,
+    endingDate: end_date_str,
+  };
+};
+
+
 module.exports = {
   getSheet,
+  getTask,
   getUser,
 };

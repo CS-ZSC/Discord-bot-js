@@ -25,6 +25,14 @@ module.exports = {
           name: "AI",
           value: "ai",
         },
+        {
+          name: "Science",
+          value: "science",
+        },
+        {
+          name: "Competitor",
+          value: "competitor",
+        },
       ],
     },
     {

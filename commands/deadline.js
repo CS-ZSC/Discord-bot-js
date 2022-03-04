@@ -50,6 +50,11 @@ module.exports = {
   ],
   slash: true,
   callback: async ({ interaction, args }) => {
+    interaction.reply({
+      content: "Working on it"
+      //content: `added ${task} in ${track} from ${startingDate} to ${endingDate}`,
+    });
+
     const track = args[0];
     const duration = args[1];
     const task = args[2];
@@ -83,10 +88,14 @@ module.exports = {
       await sheet.saveUpdatedCells();
     } catch (e) {
       console.log("Error updating the sheet");
+      interaction.editReply({
+        content: `Error updating the sheet, Mention a bot admin`,
+      });
+      return;
     }
 
     // interaction is provided only for a slash command
-    interaction.reply({
+    interaction.editReply({
       content: `added ${task} in ${track} from ${startingDate} to ${endingDate}`,
     });
   },

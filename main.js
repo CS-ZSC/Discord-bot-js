@@ -5,6 +5,7 @@ require("dotenv").config();
 const client = new Discord.Client({
   intents: ["GUILDS", "GUILD_MESSAGES"],
 });
+module.exports.client = client;   //For Helper Functions like Announce
 
 for (const eventFile of fs
   .readdirSync("./events")
@@ -15,5 +16,4 @@ for (const eventFile of fs
 }
 
 Levels.setURL(process.env.MONGO_URI);
-
 client.login(process.env.BOT_TOKEN);

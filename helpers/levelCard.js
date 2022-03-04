@@ -1,6 +1,7 @@
 const { getBufferFromUrl } = require("../helpers/utils");
 const canvacord = require("canvacord");
 const Levels = require("discord-xp");
+const config = require('../config.json');
 
 const backgroundImg = async () => {
   return await getBufferFromUrl(
@@ -27,12 +28,12 @@ const fonts = [
   },
 ];
 
-const card = async (message, user) => {
-  const levelUser = await Levels.fetch(message.author.id, message.guild.id);
-  const leaderboard = await Levels.fetchLeaderboard(message.guild.id, 10);
+const card = async (user) => {
+  const levelUser = await Levels.fetch(user.id, config.serverInfo.GUILD_ID);
+  const leaderboard = await Levels.fetchLeaderboard(config.serverInfo.GUILD_ID, 10);
   const userRank =
     leaderboard.findIndex(
-      (leaderboardUser) => leaderboardUser.userID == message.author.id
+      (leaderboardUser) => leaderboardUser.userID == user.id
     ) + 1;
   const requiredXp = Levels.xpFor(levelUser.level + 1);
   const bgImg = await backgroundImg();

@@ -1,5 +1,6 @@
 const WOKCommands = require("wokcommands");
 const path = require("path");
+const config = require('../config.json');
 
 module.exports = {
   name: "ready",
@@ -8,7 +9,7 @@ module.exports = {
     console.log("bot online");
     new WOKCommands(client, {
       commandsDir: path.join(__dirname, "../commands"),
-      testServers: ["945195764408262687"],
+      testServers: [config.serverInfo.GUID_ID],
     }).setDefaultPrefix("!");
   },
 };

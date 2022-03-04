@@ -1,11 +1,25 @@
 {
   "doneChannels": {
-    "945401777044463657": "ai",
-    "946137280018522172": "web",
+    "946137280018522172": "ai",
+    "945401777044463657": "web",
     "945607927157366794": "mobile"
   },
   "serverInfo": {
-    "GUID_ID": "945195764408262687",
+    "GUILD_ID": "945195764408262687",
     "announcments_id": "946152947631403058"
+  },
+  "points": {
+    "engagment": {
+      "normal": 1,
+      "extra": 5,
+      "extraChannels": {
+        "947242635473592340": "front-end",
+        "947239221855404033": "databases"
+      }
+    },
+    "tasks": {
+      "pointsPerDay": 15,
+      "bonus": 0.5
+    }
   }
 }

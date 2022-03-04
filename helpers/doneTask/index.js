@@ -1,61 +1,48 @@
 const { generateDateString } = require("../time/handlers");
+const { getTask, insertTaskDone  } = require('../sheets/index');
+const config = require('../../config.json');
+const { addPointsTo } = require("../addPoints");
 
-const _TASK_POINT_INITAL = 100;
-const _TASK_BONUS_RATIO = 0.5;
-const _ANNOUNCE_WHEN = 50;
+const POINTS_PER_DAY = config.points.tasks.pointsPerDay;
+const BONUS = config.points.tasks.bonus;
 
 const calculateTaskPoints = (startDate, endDate, submitDate) => {
-  const secondsFromEnd = (endDate - submitDate).getTime();
-  const duration = (endDate - startDate).getTime();
-
-  let points = _TASK_POINT_INITAL(
-    1 + (secondsFromEnd / (duration / 2)) * _TASK_BONUS_RATIO
-  );
-  points = Math.min(points, _TASK_POINT_INITAL * (1 + _TASK_BONUS_RATIO));
-  points = Math.min(points, _TASK_POINT_INITAL * (1 - _TASK_BONUS_RATIO));
+  const durationFromEnd = (endDate - submitDate)*1000;
+  const duration = (endDate - startDate)*1000;
+  let days = duration / (24*60*60);
+  days = Math.max(days, 2);     //Min score is 2 * Points per day
+  const taskPointsIntial = days * POINTS_PER_DAY;
+  let points = taskPointsIntial * (1 + durationFromEnd*BONUS/ (duration / 2));
+  points = Math.min(points, taskPointsIntial * (1 + BONUS));
+  points = Math.max(points, taskPointsIntial * (1 - BONUS));
   points = parseInt(points);
-
   return points;
 };
 
-const testIfAnnounce = (oldPoints, newPoints) => {
-  if (
-    Math.floor(newPoints / _ANNOUNCE_WHEN) >
-    Math.floor(oldPoints / _ANNOUNCE_WHEN)
-  ) {
-    return true;
-  }
-  return false;
-};
-
-const getTaskNumber = (msgContent) => {
-  return msgContent.split("-")[-1].split(" ")[-1];
-};
-
-const getTrack = (msg) => {
-  let track = msg.channel.category.name.toLower();
-  if (track == "science tasks"){
-    if (msg.channel == "science-tasks-done"){
-      track = "science-tasks";
-    }else if(msg.channel == 'competitor-done'){
-      track = "competitor-tasks";
-    }else{
-      return false
-    }
-  }
-  return track
-}
-
 const doneTask = async (message) => {
-  const taskNumber = getTaskNumber(message.content);
-  const author = `${message.author.name} #${message.author.discriminator}`;
-  const createdAt = generateDateString(message.created_at);
-
-  let track = getTrack(msg)
-  if (track == false){
-    console.log("Unrocognized channel");
+  //Checking if the message is in the correct syntax & get the track
+  const task = message.content.toLowerCase().replace(" ", " ").split(" ");
+  if (task.length != 3 || task[0] != "done") {
+    return;
+  }
+  track = config.doneChannels[message.channelId];
+  if (!track) {
+    console.log("User entered Done Task in wrong channels, or config.json is incorrect");
     return
   }
+  const taskNumber = parseInt(task[2]);
+  const author = message.author;
+  const date = new Date(message.createdTimestamp);
+  const dateStr = generateDateString(date);
 
-  
+  const taskDetails = await getTask(track, taskNumber);
+  await insertTaskDone(track, author, taskNumber, dateStr);
+
+  const taskPoints = calculateTaskPoints(taskDetails.startingDate, taskDetails.endingDate, date);
+  await addPointsTo(author, taskPoints);
+  message.react("👍");
 };
+
+module.exports = {
+  doneTask,
+}

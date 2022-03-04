@@ -9,7 +9,7 @@ module.exports = {
     console.log("bot online");
     new WOKCommands(client, {
       commandsDir: path.join(__dirname, "../commands"),
-      testServers: [config.serverInfo.GUID_ID],
+      testServers: [config.serverInfo.GUILD_ID],
     }).setDefaultPrefix("!");
   },
 };

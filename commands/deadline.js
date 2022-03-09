@@ -1,5 +1,7 @@
 const times = require("../helpers/time/handlers");
 const { getSheet } = require("../helpers/sheets/index");
+const { getMembers } = require("../helpers/getTrackMembers/index");
+const announce = require("../helpers/announce");
 
 module.exports = {
   name: "deadline",
@@ -29,10 +31,12 @@ module.exports = {
           name: "Science",
           value: "science",
         },
+        /*
         {
           name: "Competitor",
           value: "competitor",
         },
+        */
       ],
     },
     {
@@ -93,6 +97,11 @@ module.exports = {
       });
       return;
     }
+
+    const members = await getMembers(track);
+    announce.announce({
+      content: `${members} You got a task from ${startingDate} to ${endingDate}`
+    })
 
     // interaction is provided only for a slash command
     interaction.editReply({

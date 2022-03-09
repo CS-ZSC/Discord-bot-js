@@ -2,7 +2,9 @@
   "doneChannels": {
     "946137280018522172": "ai",
     "945401777044463657": "web",
-    "945607927157366794": "mobile"
+    "945607927157366794": "mobile",
+    "948053104979505172": "science",
+    "competitors_channel_id": "science"
   },
   "serverInfo": {
     "GUILD_ID": "945195764408262687",
@@ -21,5 +23,8 @@
       "pointsPerDay": 15,
       "bonus": 0.5
     }
+  },
+  "roles": {
+    "web": "949734911525421098"
   }
 }

@@ -3,13 +3,13 @@ const Levels = require("discord-xp");
 const fs = require("fs");
 require("dotenv").config();
 const client = new Discord.Client({
-  intents: ["GUILDS", "GUILD_MESSAGES"],
+  intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS"],
 });
 
 Levels.setURL(process.env.MONGO_URI);
 client.login(process.env.BOT_TOKEN);
 
-module.exports.client = client;   //For Helper Functions like Announce
+module.exports.client = client; //For Helper Functions like Announce
 
 for (const eventFile of fs
   .readdirSync("./events")

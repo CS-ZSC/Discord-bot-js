@@ -55,7 +55,7 @@ module.exports = {
   slash: true,
   callback: async ({ interaction, args }) => {
     interaction.reply({
-      content: "Working on it"
+      content: "Working on it",
       //content: `added ${task} in ${track} from ${startingDate} to ${endingDate}`,
     });
 
@@ -97,11 +97,10 @@ module.exports = {
       });
       return;
     }
-
-    const members = await getMembers(track);
+    const members = await getMembers(interaction, track);
     announce.announce({
-      content: `${members} You got a task from ${startingDate} to ${endingDate}`
-    })
+      content: `${members} You got a task from ${startingDate} to ${endingDate}`,
+    });
 
     // interaction is provided only for a slash command
     interaction.editReply({

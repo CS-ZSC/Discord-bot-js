@@ -6,7 +6,7 @@ const config = require('../../config.json');
 
 module.exports = {
   async getMembers(track) {
-    const trackId = "946737259963645983";
+    const trackId = config.roles[track];
     const trackMembers = client.guilds.cache.get(config.serverInfo.GUILD_ID).roles.cache.get(trackId).members.map(m=>m.user);
     //console.log(trackMembers);
     return trackMembers;

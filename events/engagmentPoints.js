@@ -9,10 +9,10 @@ module.exports = {
       return;
     }
     if (config.points.engagment.extraChannels[message.channelId] != undefined) {
-      addPointsTo.addPointsTo(message.author, parseInt(config.points.engagment.extra));
+      await addPointsTo.addPointsTo(message.author, parseInt(config.points.engagment.extra));
     }
     else {
-      addPointsTo.addPointsTo(message.author, parseInt(config.points.engagment.normal));
+      await addPointsTo.addPointsTo(message.author, parseInt(config.points.engagment.normal));
     }
   },
 };

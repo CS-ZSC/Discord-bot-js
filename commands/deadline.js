@@ -87,17 +87,25 @@ module.exports = {
       taskNumberCell.value = task.toString();
       startingDateCell.value = startingDate;
       endingDateCell.value = endingDate;
+      //startingDateCell.numberFormat = {type: 'DATE_TIME'};
+      //endingDateCell.numberFormat = {type: 'DATE_TIME'};
 
       // Commit the changes
       await sheet.saveUpdatedCells();
     } catch (e) {
-      console.log("Error updating the sheet");
+      console.log("Error updating the sheet", e);
       interaction.editReply({
         content: `Error updating the sheet, Mention a bot admin`,
       });
       return;
     }
-    const members = await getMembers(interaction, track);
+    let members;
+    if (track === 'science') {
+      members = await getMembers(interaction, 'cs');
+    }
+    else {
+      members = await getMembers(interaction, track);
+    }
     announce.announce({
       content: `${members} You got a task from ${startingDate} to ${endingDate}`,
     });
@@ -108,3 +116,4 @@ module.exports = {
     });
   },
 };
+

@@ -40,9 +40,8 @@ const card = async (user) => {
   const img = user.displayAvatarURL({ dynamic: false, format: "png" });
   const rank = new canvacord.Rank()
     .setAvatar(img)
-    .setCurrentXP(levelUser.xp, "#ffffff")
+    .setCurrentXP(levelUser.xp, "#FFFFFF")
     .setRequiredXP(requiredXp, "#FFC000")
-    .setBackground("IMAGE", bgImg)
     .setRank(userRank, "RANK #")
     .setRankColor("#FFFFFF", "#FFC000")
     .setOverlay("#0f0f0f", "0.7")
@@ -50,9 +49,7 @@ const card = async (user) => {
     .setUsername(user.username)
     .setLevel(levelUser.level)
     .setLevelColor("#FFFFFF", "#FFC000")
-    .setDiscriminator(user.discriminator, "rgba(255, 255, 255, 1)")
-    .registerFonts(fonts);
-
+    .setDiscriminator(user.discriminator)
   return rank;
 };
 

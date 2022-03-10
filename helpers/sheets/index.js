@@ -68,8 +68,8 @@ const getUserPoints = async (userId) => {
 
 const getTask = async (track, task) => {
   let sheet = await getSheet(track + "_DL");
-  let task_row = task + 1;
-  let task_col = 1;
+  let task_row = task;
+  let task_col = 0;
   await sheet.loadCells({
     startRowIndex: task_row,
     endRowIndex: task_row + 1,

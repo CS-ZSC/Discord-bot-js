@@ -7,8 +7,8 @@ const POINTS_PER_DAY = config.points.tasks.pointsPerDay;
 const BONUS = config.points.tasks.bonus;
 
 const calculateTaskPoints = (startDate, endDate, submitDate) => {
-  const durationFromEnd = (endDate - submitDate)*1000;
-  const duration = (endDate - startDate)*1000;
+  const durationFromEnd = (endDate - submitDate)/1000;
+  const duration = (endDate - startDate)/1000;
   let days = duration / (24*60*60);
   days = Math.max(days, 2);     //Min score is 2 * Points per day
   const taskPointsIntial = days * POINTS_PER_DAY;

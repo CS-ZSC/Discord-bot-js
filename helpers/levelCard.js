@@ -28,13 +28,12 @@ const fonts = [
   },
 ];
 
-const card = async (user) => {
+const card = async (user, userRank = undefined) => {
   const levelUser = await Levels.fetch(user.id, config.serverInfo.GUILD_ID);
   const leaderboard = await Levels.fetchLeaderboard(config.serverInfo.GUILD_ID, 10);
-  const userRank =
-    leaderboard.findIndex(
-      (leaderboardUser) => leaderboardUser.userID == user.id
-    ) + 1;
+  if (userRank === undefined) {
+    userRank = leaderboard.findIndex( (leaderboardUser) => leaderboardUser.userID == user.id) + 1;
+  }
   const requiredXp = Levels.xpFor(levelUser.level + 1);
   const bgImg = await backgroundImg();
   const img = user.displayAvatarURL({ dynamic: false, format: "png" });

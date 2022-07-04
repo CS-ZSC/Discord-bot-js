@@ -3,34 +3,6 @@ const canvacord = require("canvacord");
 const Levels = require("discord-xp");
 const config = require('../config.json');
 
-/*
-const backgroundImg = async () => {
-  return await getBufferFromUrl(
-    "https://media-exp1.licdn.com/dms/image/C5616AQFObxClmyrJCQ/profile-displaybackgroundimage-shrink_350_1400/0/1639796115609?e=1651708800&v=beta&t=Usy7ESxs3ct0aXg39Kg3smRiHVj8FcT3ie3VvyBnIPU"
-  );
-};
-
-
-const fonts = [
-  {
-    path: "./assets/Quantico-Bold.ttf",
-    face: {
-      family: "Quantico",
-      weight: "bold",
-      style: "normal",
-    },
-  },
-  {
-    path: "./assets/Quantico-Regular.ttf",
-    face: {
-      family: "Quantico",
-      weight: "regular",
-      style: "normal",
-    },
-  },
-];
-*/
-
 const card = async (user) => {
   const levelUser = await Levels.fetch(user.id, config.serverInfo.GUILD_ID);
   const leaderboard = await Levels.fetchLeaderboard(config.serverInfo.GUILD_ID, 30);
@@ -39,7 +11,6 @@ const card = async (user) => {
       (leaderboardUser) => leaderboardUser.userID == user.id
     ) + 1;
   const requiredXp = Levels.xpFor(levelUser.level + 1);
-  //const bgImg = await backgroundImg();
   const img = user.displayAvatarURL({ dynamic: false, format: "png" });
   const rank = new canvacord.Rank()
     .setAvatar(img)

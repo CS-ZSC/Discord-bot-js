@@ -1,11 +1,7 @@
 const { generateDateString } = require("../time/handlers");
 const { getTask, insertTaskDone  } = require('../sheets/index');
 const config = require('../../config.json');
-<<<<<<< HEAD
-const { addPointsTo } = require("../addPoints");
-=======
 const addPointsTo = require("../addPoints/index");
->>>>>>> 3d7f5cd6762cfa95158164d160b423808a3ed8dd
 
 const POINTS_PER_DAY = config.points.tasks.pointsPerDay;
 const BONUS = config.points.tasks.bonus;
@@ -25,11 +21,7 @@ const calculateTaskPoints = (startDate, endDate, submitDate) => {
 
 const doneTask = async (message) => {
   //Checking if the message is in the correct syntax & get the track
-<<<<<<< HEAD
-  const task = message.content.toLowerCase().replace(" ", " ").split(" ");
-=======
   const task = message.content.toLowerCase().replace("-", " ").split(" ");
->>>>>>> 3d7f5cd6762cfa95158164d160b423808a3ed8dd
   if (task.length != 3 || task[0] != "done") {
     return;
   }
@@ -45,15 +37,9 @@ const doneTask = async (message) => {
 
   const taskDetails = await getTask(track, taskNumber);
   await insertTaskDone(track, author, taskNumber, dateStr);
-<<<<<<< HEAD
-
-  const taskPoints = calculateTaskPoints(taskDetails.startingDate, taskDetails.endingDate, date);
-  await addPointsTo(author, taskPoints);
-=======
   const taskPoints = calculateTaskPoints(taskDetails.startingDate, taskDetails.endingDate, date);
   await addPointsTo.addPointsTo(author, taskPoints);
   console.log(`Added ${taskPoints} to ${author}`)
->>>>>>> 3d7f5cd6762cfa95158164d160b423808a3ed8dd
   message.react("👍");
 };
 

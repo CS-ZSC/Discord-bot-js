@@ -7,6 +7,7 @@
     "discord-xp": "^1.1.16",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
+    "gh": "^2.8.9",
     "google-spreadsheet": "^3.2.0",
     "mongoose": "^6.2.4",
     "wokcommands": "^1.5.3"

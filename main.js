@@ -1,7 +1,11 @@
 const Discord = require("discord.js");
 const Levels = require("discord-xp");
 const fs = require("fs");
+<<<<<<< HEAD
 require("dotenv").config();
+=======
+//require("dotenv").config();
+>>>>>>> 3d7f5cd6762cfa95158164d160b423808a3ed8dd
 const client = new Discord.Client({
   intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS"],
 });
@@ -18,3 +22,18 @@ for (const eventFile of fs
   if (event.once) client.once(event.name, (...args) => event.execute(...args));
   else client.on(event.name, (...args) => event.execute(...args));
 }
+<<<<<<< HEAD
+=======
+
+const http = require('http');
+const requestListener = function (req, res) {
+  res.writeHead(200);
+  res.end('Hello, World!');
+}
+const server = http.createServer(requestListener);
+server.listen(80);
+
+process.on('uncaughtException', function (err) {
+  console.log('Caught exception: ', err);
+});
+>>>>>>> 3d7f5cd6762cfa95158164d160b423808a3ed8dd

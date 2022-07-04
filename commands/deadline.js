@@ -31,12 +31,6 @@ module.exports = {
           name: "Science",
           value: "science",
         },
-        /*
-        {
-          name: "Competitor",
-          value: "competitor",
-        },
-        */
       ],
     },
     {
@@ -56,7 +50,6 @@ module.exports = {
   callback: async ({ interaction, args }) => {
     interaction.reply({
       content: "Working on it",
-      //content: `added ${task} in ${track} from ${startingDate} to ${endingDate}`,
     });
 
     const track = args[0];
@@ -87,8 +80,6 @@ module.exports = {
       taskNumberCell.value = task.toString();
       startingDateCell.value = startingDate;
       endingDateCell.value = endingDate;
-      //startingDateCell.numberFormat = {type: 'DATE_TIME'};
-      //endingDateCell.numberFormat = {type: 'DATE_TIME'};
 
       // Commit the changes
       await sheet.saveUpdatedCells();
@@ -116,4 +107,3 @@ module.exports = {
     });
   },
 };
-

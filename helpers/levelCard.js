@@ -23,7 +23,6 @@ const card = async (user) => {
     .setUsername(user.username)
     .setLevel(levelUser.level)
     .setLevelColor("#FFFFFF", "#FFC000")
-    .setDiscriminator(user.discriminator)
   return rank;
 };
 

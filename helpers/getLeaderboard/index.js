@@ -3,6 +3,7 @@
 */
 const client = require("../../main").client;
 const config = require("../../config.json");
+const Levels = require("discord-xp");
 
 module.exports = {
   async getLeaderboard() {

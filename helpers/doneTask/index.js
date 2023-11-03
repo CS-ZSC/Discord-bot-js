@@ -2,6 +2,7 @@ const { generateDateString } = require("../time/handlers");
 const { getTask, insertTaskDone  } = require('../sheets/index');
 const config = require('../../config.json');
 const addPointsTo = require("../addPoints/index");
+const {getParentChannel} = require("../getParentChannel");
 
 const POINTS_PER_DAY = config.points.tasks.pointsPerDay;
 const BONUS = config.points.tasks.bonus;
@@ -21,11 +22,13 @@ const calculateTaskPoints = (startDate, endDate, submitDate) => {
 
 const doneTask = async (message) => {
   //Checking if the message is in the correct syntax & get the track
-  const task = message.content.toLowerCase().replace("-", " ").split(" ");
+  const task = message.channel.name.toLowerCase().replace("-", " ").split(" ");
   if (task.length != 3 || task[0] != "done") {
     return;
   }
-  track = config.doneChannels[message.channelId];
+  const trackChannel  = await getParentChannel(message.channelId)
+  track = config.doneChannels[trackChannel.id];
+
   if (!track) {
     console.log("User entered Done Task in wrong channels, or config.json is incorrect");
     return
@@ -39,8 +42,8 @@ const doneTask = async (message) => {
   await insertTaskDone(track, author, taskNumber, dateStr);
   const taskPoints = calculateTaskPoints(taskDetails.startingDate, taskDetails.endingDate, date);
   await addPointsTo.addPointsTo(author, taskPoints);
-  console.log(`Added ${taskPoints} to ${author}`)
-  message.react("👍");
+  console.log(`Added ${taskPoints} to ${author.username} for completing task ${taskNumber} in track ${track}`);
+  message.react("❤️");
 };
 
 module.exports = {

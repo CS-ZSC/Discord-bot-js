@@ -6,7 +6,7 @@ const announce = require("../helpers/announce");
 module.exports = {
   name: "deadline",
   description: "Make a deadline for specific track", // Required for slash commands
-  testOnly: true,
+  category: "Deadline",
 
   options: [
     {
@@ -16,16 +16,24 @@ module.exports = {
       type: 3,
       choices: [
         {
-          name: "Web",
-          value: "web",
+          name: "Frontend",
+          value: "frontend",
+        },
+        {
+          name: "Backend",
+          value: "backend",
         },
         {
           name: "Mobile",
           value: "mobile",
         },
         {
-          name: "AI",
-          value: "ai",
+          name: "Advanced AI",
+          value: "advanced_ai",
+        },
+        {
+          name: "Basic AI",
+          value: "basic_ai",
         },
         {
           name: "Science",
@@ -37,13 +45,13 @@ module.exports = {
       name: "duration",
       description: "Please enter the duration in days [7 Days Recommended]",
       required: true,
-      type: 4,
+      type: 3,
     },
     {
       name: "task",
       description: "Please enter the task number",
       required: true,
-      type: 4,
+      type: 3,
     },
   ],
   slash: true,

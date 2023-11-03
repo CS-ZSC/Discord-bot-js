@@ -1,12 +1,17 @@
 {
+  "name": "cs-bot",
+  "version": "1.0.0",
+  "description": "A bot for the CS Discord Server",
+  "main": "main.js",
   "scripts": {
+    "start": "node main.js",
     "dev": "nodemon main.js"
   },
   "dependencies": {
     "canvacord": "^5.2.3",
     "discord-xp": "^1.1.16",
     "discord.js": "^13.6.0",
-    "dotenv": "^16.0.0",
+    "dotenv": "^16.3.1",
     "gh": "^2.8.9",
     "google-spreadsheet": "^3.2.0",
     "mongoose": "^6.2.4",

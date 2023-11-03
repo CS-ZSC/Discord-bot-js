@@ -16,7 +16,7 @@ module.exports = {
     if (hasLeveledUP) {
       const user = await Levels.fetch(author.id, config.serverInfo.GUILD_ID);
       const rank = await card(author);
-      rank.build({ fontX: "Quantico", fontY: "Quantico" }).then((buffer) => {
+      rank.build({ fontX: "Arial", fontY: "Arial" }).then((buffer) => {
          announce.announce({
            content: `${author} Congratulations! You Have Reached Level ${user.level}`,
            files: [{ attachment: buffer }],

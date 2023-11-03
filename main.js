@@ -1,16 +1,13 @@
 const Discord = require("discord.js");
 const Levels = require("discord-xp");
 const fs = require("fs");
+require('dotenv').config({ path: './.env' });
 //require("dotenv").config();
 const client = new Discord.Client({
   intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS"],
 });
 
-Levels.setURL(process.env.MONGO_URI);
-client.login(process.env.BOT_TOKEN);
-
 module.exports.client = client; //For Helper Functions like Announce
-
 for (const eventFile of fs
   .readdirSync("./events")
   .filter((file) => file.endsWith(".js"))) {
@@ -25,8 +22,12 @@ const requestListener = function (req, res) {
   res.end('Hello, World!');
 }
 const server = http.createServer(requestListener);
-server.listen(80);
+server.listen(process.env.PORT || 5000);
 
 process.on('uncaughtException', function (err) {
   console.log('Caught exception: ', err);
 });
+
+
+client.login(process.env.BOT_TOKEN).then(r => console.log("Logged in!"));
+Levels.setURL(process.env.MONGO_URI).then(r => r).catch(e => console.log(e));

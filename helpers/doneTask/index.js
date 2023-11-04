@@ -23,11 +23,11 @@ const calculateTaskPoints = (startDate, endDate, submitDate) => {
 const doneTask = async (message) => {
   //Checking if the message is in the correct syntax & get the track
   const task = message.channel.name.toLowerCase().replace("-", " ").split(" ");
-  if (task.length != 3 || task[0] != "done") {
+  if (task.length !== 3 || task[0] !== "done" || task[1] !== "task") {
     return;
   }
   const trackChannel  = await getParentChannel(message.channelId)
-  track = config.doneChannels[trackChannel.id];
+  const track = config.doneChannels[trackChannel.id];
 
   if (!track) {
     console.log("User entered Done Task in wrong channels, or config.json is incorrect");

@@ -19,15 +19,8 @@ for (const eventFile of fs
 
 const http = require('http');
 const requestListener = async function (req, res) {
-    const series = require (series);
-    const {exec} = require('child_process');
-    await series([
-        async () => await exec('npm run dev'),
-    ]);
-    res.writeHead(200);
     const delay =ms => new Promise(res => setTimeout(res, ms));
-    delay(10000).then(r => res.end('Hello, World!'));
-    res.end('Hello, World!');
+    delay(86400000).then(r => res.end('Hello, World!'));
 }
 const server = http.createServer(requestListener);
 server.listen(process.env.PORT || 5000);

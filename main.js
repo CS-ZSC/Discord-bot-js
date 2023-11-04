@@ -20,7 +20,7 @@ for (const eventFile of fs
 const http = require('http');
 const requestListener = async function (req, res) {
     const delay =ms => new Promise(res => setTimeout(res, ms));
-    delay(86400000).then(r => res.end('Hello, World!'));
+    delay(3000000).then(r => res.end('Hello, World!'));
 }
 const server = http.createServer(requestListener);
 server.listen(process.env.PORT || 5000);

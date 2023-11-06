@@ -1,6 +1,17 @@
 const { GoogleSpreadsheet } = require("google-spreadsheet");
-const creds = require("./creds.json");
+const {decryptToString} = require("./secure-file");
 require("dotenv").config();
+
+
+/**
+ * decrypts the secure file to return the Google sheet credentials
+ * @returns the Google sheet credentials
+ */
+async function decrypt() {
+  const secureFileName = './helpers/sheets/creds.json.secure'
+  const jsonStr = await decryptToString(secureFileName)
+  return JSON.parse(jsonStr);
+}
 
 /**
  * Connects to google sheet and returns the doc
@@ -8,6 +19,7 @@ require("dotenv").config();
  */
 const connect = async () => {
   const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID);
+  const creds = await decrypt();
   await doc.useServiceAccountAuth(creds);
   await doc.loadInfo(); // loads document properties and worksheets
   return doc;
@@ -20,8 +32,8 @@ const connect = async () => {
  */
 const getSheet = async (sheetName) => {
   const doc = await connect();
-  const sheet = doc.sheetsByTitle[sheetName]; // or use doc.sheetsById[id] or doc.sheetsByTitle[title]
-  return sheet;
+   // use doc.sheetsById[id] or doc.sheetsByTitle[title]
+  return doc.sheetsByTitle[sheetName];
 };
 
 /**
@@ -43,17 +55,15 @@ const searchRows = (rows, columnName, searchValue) => {
 
 /**
  * Gets the user row by Discord Tag
- * @param sheetName
- * @param {string} username username in discord
+ * @param {string} sheetName
+ * @param {string} userId The user id which means username in discord + #userdescriminator
  * @returns returns the user row
  */
-const getUser = async (sheetName, username) => {
+const getUser = async (sheetName, userId) => {
   const sheet = await getSheet(sheetName);
   const rows = await sheet.getRows();
   const columnName = "Discord Tag";
-  const searchValue = username;
-  const userRow = searchRows(rows, columnName, searchValue);
-  return userRow;
+  return searchRows(rows, columnName, userId);
 };
 
 
@@ -90,18 +100,37 @@ const getTask = async (track, task) => {
 
 
 const insertTaskDone = async (track, author, taskNumber, dateStr) => {
-  const [userRow] = await getUser(track, author.username );
+  const [userRow] = await getUser(track, author.username);
   if (!userRow || userRow === '') {
     console.log("Couldn't find the author in the spreadsheet");
-    return;
+    return false;
   }
   userRow[`Task_${taskNumber}`] = "Done " + dateStr;
   await userRow.save();
+  return true;
 };
+
+/**
+ * Search a range of rows by column
+ * @param {int} taskNumber the task number that you want to search in
+ * @param {object} author the name of the user that you want to search in
+ * @param {string} track the track of the user
+ * @returns array boolean if the user done the task or not
+ */
+const userDoneTask = async (taskNumber, author, track) => {
+  const userRow = await getUser(track, author.username);
+  if (!userRow) {
+    console.log("Couldn't find the author in the spreadsheet");
+    return false;
+  }
+  return userRow[0]._rawData[2+taskNumber] !== undefined;
+}
+
 
 module.exports = {
   getSheet,
   getTask,
   getUser,
-  insertTaskDone
+  insertTaskDone,
+  userDoneTask,
 };

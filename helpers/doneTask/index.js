@@ -3,6 +3,9 @@ const { getTask, insertTaskDone  } = require('../sheets/index');
 const config = require('../../config.json');
 const addPointsTo = require("../addPoints/index");
 const {getParentChannel} = require("../getParentChannel");
+const {client} = require("../../main");
+const {alreadyDone} = require("../aleadyDone");
+const {doesTaskExists} = require("../sheets");
 
 const POINTS_PER_DAY = config.points.tasks.pointsPerDay;
 const BONUS = config.points.tasks.bonus;
@@ -21,29 +24,41 @@ const calculateTaskPoints = (startDate, endDate, submitDate) => {
 };
 
 const doneTask = async (message) => {
-  //Checking if the message is in the correct syntax & get the track
-  const task = message.channel.name.toLowerCase().replace("-", " ").split(" ");
-  if (task.length !== 3 || task[0] !== "done" || task[1] !== "task") {
-    return;
-  }
-  const trackChannel  = await getParentChannel(message.channelId)
-  const track = config.doneChannels[trackChannel.id];
 
+  //Get the parent channel of the thread
+  const doneChannel = await getParentChannel(message.channelId)
+
+    //Get the task number from the name of the thread "Done Task-<taskNumber>"
+  const taskNumber = parseInt(message.channel.name.split("-")[1]);
+
+
+  //Get the track from the config file
+  const track = config.doneChannels[doneChannel.id];
   if (!track) {
     console.log("User entered Done Task in wrong channels, or config.json is incorrect");
     return
   }
-  const taskNumber = parseInt(task[2]);
+
   const author = message.author;
-  const date = new Date(message.createdTimestamp);
-  const dateStr = generateDateString(date);
+  const timeOfMessage = new Date(message.createdTimestamp);
+  const dateStr = generateDateString(timeOfMessage);
 
   const taskDetails = await getTask(track, taskNumber);
-  await insertTaskDone(track, author, taskNumber, dateStr);
-  const taskPoints = calculateTaskPoints(taskDetails.startingDate, taskDetails.endingDate, date);
-  await addPointsTo.addPointsTo(author, taskPoints);
-  console.log(`Added ${taskPoints} to ${author.username} for completing task ${taskNumber} in track ${track}`);
-  message.react("❤️");
+  //Check if the task exists
+  if (await getTask(track, taskNumber) == null) {
+    console.log("Task doesn't exist in the spreadsheet");
+    return;
+  }
+  if (await alreadyDone(track, author, taskNumber)) {
+    await console.log("User have already done this task");
+    return;
+  }
+  if (await insertTaskDone(track, author, taskNumber, dateStr)){
+    const taskPoints = calculateTaskPoints(taskDetails.startingDate, taskDetails.endingDate, timeOfMessage);
+    await addPointsTo.addPointsTo(author, taskPoints);
+    console.log(`Added ${taskPoints} to ${author}`)
+    await message.react("❤️");
+  }
 };
 
 module.exports = {

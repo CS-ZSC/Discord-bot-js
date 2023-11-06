@@ -9,7 +9,6 @@ module.exports = {
      */
     getParentChannel: async function getParentChannel(threadId) {
         const thread = await client.channels.fetch(threadId);
-        const parentChannel = await client.channels.fetch(thread.parentId);
-        return parentChannel;
+        return await client.channels.fetch(thread.parentId);
     }
 }

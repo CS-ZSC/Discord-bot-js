@@ -8,7 +8,7 @@ module.exports = {
     if (message.author.bot === true) {
       return;
     }
-    if (config.points.engagment.extraChannels[message.channelId] != undefined) {
+    if (config.points.engagment.extraChannels[message.channelId] !== undefined) {
       await addPointsTo.addPointsTo(message.author, parseInt(config.points.engagment.extra));
     }
     else {

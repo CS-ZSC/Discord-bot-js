@@ -23,8 +23,8 @@ const strDayLastSecond = (date, duration) => {
 
 /**
  * Gets the string from a date
- * @param {date} date the date that you want to convert into string
- * @returns The string of the date
+ * @param {Date} date the date that you want to convert into string
+ * @returns string string of the date
  */
 const generateDateString = (date) => {
   return date.toISOString().replace("T", " ").substring(0, 19);

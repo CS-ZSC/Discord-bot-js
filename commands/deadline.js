@@ -39,6 +39,10 @@ module.exports = {
           name: "Science",
           value: "science",
         },
+        {
+          name: "Rookies",
+          value: "rookies",
+        },
       ],
     },
     {

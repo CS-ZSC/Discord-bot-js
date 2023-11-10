@@ -10,7 +10,7 @@ module.exports = {
     description: "Get your points",
     callback: async ({interaction,user}) => {
         interaction.reply({
-            content: "Working on it",
+            content: "Working on it",ephemeral: true,
         });
         try {
             await addPointsTo.addPointsTo(user, 1);

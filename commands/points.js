@@ -22,6 +22,7 @@ module.exports = {
                     announce.announce({
                         content: `Hello ${user.username}`,
                         files: [{attachment: buffer}],
+                        ephemeral: true,
                     });
                 } else {
                     console.log("Failed to generate rank image: Buffer is empty.");

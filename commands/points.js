@@ -8,9 +8,9 @@ module.exports = {
     slash: true,
     category: "Points",
     description: "Get your points",
-    callback: async ({interaction,user}) => {
+    callback: async ({interaction, user}) => {
         interaction.reply({
-            content: "Working on it",ephemeral: true,
+            content: "Working on it", ephemeral: true,
         });
         try {
             await addPointsTo.addPointsTo(user, 1);
@@ -19,8 +19,8 @@ module.exports = {
             if (rank && typeof rank.build === 'function') {
                 const buffer = await rank.build({fontX: "Arial", fontY: "Arial"});
                 if (buffer) {
-                    announce.announce({
-                        content: `Hello ${user.username}`,
+                    interaction.editReply({
+                        content: `Hello ${user.username} here is your rank card`,
                         files: [{attachment: buffer}],
                         ephemeral: true,
                     });
@@ -33,9 +33,6 @@ module.exports = {
         } catch (error) {
             console.error("An error occurred:", error);
         }
-        interaction.editReply({
-            content: `check bot announcement`,
-    });
     }
 
 };

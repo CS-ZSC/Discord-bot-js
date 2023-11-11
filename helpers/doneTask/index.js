@@ -40,8 +40,7 @@ const doneTask = async (message) => {
   }
 
   const author = message.author;
-  const timeOfMessage = new Date(message.createdTimestamp);
-  const dateStr = generateDateString(timeOfMessage);
+  const dateStr = generateDateString(new Date(message.createdTimestamp));
 
   const taskDetails = await getTask(track, taskNumber);
   //Check if the task exists
@@ -54,7 +53,7 @@ const doneTask = async (message) => {
     return;
   }
   if (await insertTaskDone(track, author, taskNumber, dateStr)){
-    const taskPoints = calculateTaskPoints(taskDetails.startingDate, taskDetails.endingDate, timeOfMessage);
+    const taskPoints = calculateTaskPoints(new Date(taskDetails.startingDate), new Date(taskDetails.endingDate), new Date(dateStr));
     await addPointsTo.addPointsTo(author, taskPoints);
     console.log(`Added ${taskPoints} to ${author}`)
     await message.react("❤️");

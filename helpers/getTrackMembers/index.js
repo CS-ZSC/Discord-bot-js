@@ -8,11 +8,9 @@ module.exports = {
   async getMembers(interaction, track) {
     const trackId = config.roles[track];
     await interaction.guild.members.fetch();
-    const trackMembers = client.guilds.cache
-      .get(config.serverInfo.GUILD_ID)
-      .roles.cache.get(trackId)
-      .members.map((m) => m.user);
-    //console.log(trackMembers);
-    return trackMembers;
+    return client.guilds.cache
+        .get(config.serverInfo.GUILD_ID)
+        .roles.cache.get(trackId)
+        .members.map((m) => m.user);
   },
 };

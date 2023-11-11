@@ -5,7 +5,7 @@ const algorithm = 'aes-256-gcm';
 const SECRET_SALT = process.env.SECRET_SALT
 const SECRET_PASSPHRASE = process.env.SECRET_PASSPHRASE
 
-const secretKey = crypto.scryptSync(SECRET_PASSPHRASE, SECRET_SALT, 32); // salt can be random, but in this case we are just using a string
+const secretKey = crypto.scryptSync(SECRET_PASSPHRASE, SECRET_SALT, 32);
 
 async function encryptFile(inputPath, key=secretKey) {
   const iv = crypto.randomBytes(16);
@@ -45,9 +45,6 @@ async function decryptToString(inputPath, key=secretKey) {
   ]);
   return decrypted.toString('utf8');
 }
-
-// await encryptFile('test.txt', 'test.encrypted');
-// decryptFile('test.encrypted', 'test.decrypted', 'iv.txt');
 
 
 module.exports = {

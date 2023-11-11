@@ -8,11 +8,11 @@ module.exports = {
     if (message.author.bot === true) {
       return;
     }
-    if (config.points.engagment.extraChannels[message.channelId] !== undefined) {
-      await addPointsTo.addPointsTo(message.author, parseInt(config.points.engagment.extra));
+    if (config.points.engagement.extraChannels[message.channelId] !== undefined) {
+      await addPointsTo.addPointsTo(message.author, parseInt(config.points.engagement.extra));
     }
     else {
-      await addPointsTo.addPointsTo(message.author, parseInt(config.points.engagment.normal));
+      await addPointsTo.addPointsTo(message.author, parseInt(config.points.engagement.normal));
     }
   },
 };

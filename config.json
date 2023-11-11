@@ -10,10 +10,10 @@
   },
   "serverInfo": {
     "GUILD_ID": "1168210332825702481",
-    "announcments_id": "1169006879188463656"
+    "announcements_id": "1172816599405834351"
   },
   "points": {
-    "engagment": {
+    "engagement": {
       "normal": 1,
       "extra": 5,
       "extraChannels": {
@@ -36,6 +36,6 @@
     "advanced_ai": "1168379145223426208",
     "mobile": "1168398196020617317",
     "cs": "1168366278986190920",
-    "rookie": "1168364062871142410"
+    "rookies": "1168364062871142410"
   }
 }

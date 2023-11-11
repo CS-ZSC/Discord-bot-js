@@ -43,7 +43,7 @@ module.exports = {
       ],
     },
     {
-      name: "task number",
+      name: "task_number",
       description: "Please enter the task number",
       required: true,
       type: 3,

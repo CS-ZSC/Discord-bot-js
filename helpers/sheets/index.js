@@ -128,7 +128,6 @@ const userDoneTask = async (taskNumber, author, track) => {
  * @param {string} track - The track name
  * @param {string} username - The username to identify the row
  * @param {int} taskNumber - The task number
- * @returns {string} The feedback for the task
  */
 const getTaskFeedback = async (track, username, taskNumber) => {
   const sheet = await getSheet(`${track}_FB`);

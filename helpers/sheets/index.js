@@ -1,16 +1,7 @@
 const { GoogleSpreadsheet } = require("google-spreadsheet");
 const { decryptToString } = require("./secure-file");
-require("dotenv").config();
 
-/**
- * Decrypts the secure file to return the Google sheet credentials
- * @returns {object} The Google sheet credentials
- */
-async function decrypt() {
-  const secureFileName = './helpers/sheets/creds.json.secure';
-  const jsonStr = await decryptToString(secureFileName);
-  return JSON.parse(jsonStr);
-}
+require("dotenv").config();
 
 /**
  * Connects to Google sheet and returns the document
@@ -18,8 +9,8 @@ async function decrypt() {
  */
 const connect = async () => {
   const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID);
-  const creds = await decrypt();
-  await doc.useServiceAccountAuth(creds);
+  const {credentials} = require("../../events/ready");
+  await doc.useServiceAccountAuth(credentials);
   await doc.loadInfo(); // loads document properties and worksheets
   return doc;
 };

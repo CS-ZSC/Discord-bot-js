@@ -1,95 +1,79 @@
 const { GoogleSpreadsheet } = require("google-spreadsheet");
-const {decryptToString} = require("./secure-file");
+const { decryptToString } = require("./secure-file");
+
 require("dotenv").config();
 
-
 /**
- * decrypts the secure file to return the Google sheet credentials
- * @returns the Google sheet credentials
- */
-async function decrypt() {
-  const secureFileName = './helpers/sheets/creds.json.secure'
-  const jsonStr = await decryptToString(secureFileName)
-  return JSON.parse(jsonStr);
-}
-
-/**
- * Connects to google sheet and returns the doc
- * @returns The google sheet document
+ * Connects to Google sheet and returns the document
+ * @returns {object} The Google sheet document
  */
 const connect = async () => {
   const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID);
-  const creds = await decrypt();
-  await doc.useServiceAccountAuth(creds);
+  const {credentials} = require("../../events/ready");
+  await doc.useServiceAccountAuth(credentials);
   await doc.loadInfo(); // loads document properties and worksheets
   return doc;
 };
 
 /**
- *  Get a sheet by name
- * @param {string} sheetName the name of the sheet
- * @returns the sheet
+ * Get a sheet by name
+ * @param {string} sheetName - The name of the sheet
+ * @returns {object} The sheet
  */
 const getSheet = async (sheetName) => {
   const doc = await connect();
-   // use doc.sheetsById[id] or doc.sheetsByTitle[title]
   return doc.sheetsByTitle[sheetName];
 };
 
 /**
  * Search a range of rows by column
- * @param {object} rows Range of rows that you want to search in
- * @param {string} columnName the name of column you want to search in
- * @param {string} searchValue the value that you want to find
- * @returns array of rows that has the search value
+ * @param {object} rows - Range of rows that you want to search in
+ * @param {string} columnName - The name of the column you want to search in
+ * @param {string} searchValue - The value that you want to find
+ * @returns {array} Array of rows that have the search value
  */
 const searchRows = (rows, columnName, searchValue) => {
-  return rows.filter(
-      (row) => {
-        if (row[columnName]) {
-          return row[columnName].toLowerCase() === searchValue.toLowerCase()
-        }
-      }
-  );
+  return rows.filter((row) => row[columnName]?.toLowerCase() === searchValue.toLowerCase());
 };
 
 /**
  * Gets the user row by Discord Tag
  * @param {string} sheetName
- * @param {string} userId The user id which means username in discord + #userdescriminator
- * @returns returns the user row
+ * @param {string} userId - The user id (username in Discord + #userdescriminator)
+ * @returns {object} The user row
  */
 const getUser = async (sheetName, userId) => {
   const sheet = await getSheet(sheetName);
   const rows = await sheet.getRows();
   const columnName = "Discord Tag";
-  return searchRows(rows, columnName, userId);
+  return searchRows(rows, columnName, userId)[0];
 };
 
-
-const getUserPoints = async (userId) => {
-  const sheet = await getSheet("points");
-  const rows = await sheet.getRows();
-  const columnName = "Discord Tag";
-  return searchRows(rows, columnName, userId);
-};
+// const getUserPoints = async (userId) => {
+//   const sheet = await getSheet("points");
+//   const rows = await sheet.getRows();
+//   const columnName = "Discord Tag";
+//   return searchRows(rows, columnName, userId)[0];
+// };
 
 const getTask = async (track, task) => {
-  let sheet = await getSheet(track + "_DL");
-  let task_row = task;
-  let task_col = 0;
+  const sheet = await getSheet(`${track}_DL`);
+  const task_row = task;
+  const task_col = 0;
   await sheet.loadCells({
     startRowIndex: task_row,
     endRowIndex: task_row + 1,
     startColumnIndex: task_col,
     endColumnIndex: task_col + 3,
   });
-  const startDate = new Date(sheet.getCell(task_row, task_col + 1).value);
-  const endDate = new Date(sheet.getCell(task_row, task_col + 2).value);
-  if (endDate == null || startDate == null) {
-    // print("Task Deadline doesn't exist in the spreadsheet")
-    return null;
+  const taskCell = sheet.getCell(task_row, task_col).value;
+  const startDate = sheet.getCell(task_row, task_col + 1).value;
+  const endDate = sheet.getCell(task_row, task_col + 2).value;
+
+  if (endDate == null || startDate == null || taskCell == null) {
+    throw new Error(`This task doesn't exist yet`);
   }
+
   return {
     track,
     task,
@@ -98,34 +82,82 @@ const getTask = async (track, task) => {
   };
 };
 
-
 const insertTaskDone = async (track, author, taskNumber, dateStr) => {
-  const [userRow] = await getUser(track, author.username);
+  const userRow = await getUser(track, author.username);
+
   if (!userRow || userRow === '') {
     console.log("Couldn't find the author in the spreadsheet");
     return false;
   }
-  userRow[`Task_${taskNumber}`] = "Done " + dateStr;
+
+  userRow[`Task_${taskNumber}`] = `Done ${dateStr}`;
   await userRow.save();
   return true;
 };
 
 /**
- * Search a range of rows by column
- * @param {int} taskNumber the task number that you want to search in
- * @param {object} author the name of the user that you want to search in
- * @param {string} track the track of the user
- * @returns array boolean if the user done the task or not
+ * Check if the user has done a specific task in the specified track
+ * @param {int} taskNumber - The task number
+ * @param {object} author - The user object
+ * @param {string} track - The track of the user
  */
 const userDoneTask = async (taskNumber, author, track) => {
-  const userRow = await getUser(track, author.username);
+  const sheet = await getSheet(track);
+  const rows = await sheet.getRows();
+  const userRow = rows.find((row) => row._rawData[2] === author.username);
+
   if (!userRow) {
     console.log("Couldn't find the author in the spreadsheet");
     return false;
   }
-  return userRow[0]._rawData[2+taskNumber] !== undefined;
-}
 
+  return userRow[`Task_${taskNumber}`] !== undefined;
+};
+
+/**
+ * Get feedback for a specific task in the specified track
+ * @param {string} track - The track name
+ * @param {string} username - The username to identify the row
+ * @param {int} taskNumber - The task number
+ */
+const getTaskFeedback = async (track, username, taskNumber) => {
+  const sheet = await getSheet(`${track}_FB`);
+
+  try {
+    await getTask(track, taskNumber);
+  } catch (e) {
+    throw new Error(e.message);
+  }
+
+  if (!await userDoneTask(taskNumber, { username }, track)) {
+    throw new Error(`You didn't finish this task yet`);
+  }
+
+  const rows = await sheet.getRows();
+  const userRow = rows.find((row) => row._rawData[2] === username);
+
+  if (!userRow) {
+    throw new Error(`Looks like you are not in the ${track} track`);
+  }
+
+  const taskRow = userRow.rowIndex;
+  const taskCol = parseInt(taskNumber) + 2;
+
+  await sheet.loadCells({
+    startRowIndex: taskRow - 1,
+    endRowIndex: taskRow,
+    startColumnIndex: taskCol,
+    endColumnIndex: taskCol + 1,
+  });
+
+  const feedback = sheet.getCell(taskRow - 1, taskCol).value;
+
+  if (!feedback) {
+    throw new Error(`Looks like your feedback for task ${taskNumber} is not ready yet`);
+  }
+
+  return feedback;
+};
 
 module.exports = {
   getSheet,
@@ -133,4 +165,5 @@ module.exports = {
   getUser,
   insertTaskDone,
   userDoneTask,
+  getTaskFeedback,
 };

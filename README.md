@@ -18,6 +18,7 @@ Before running the bot, install the required dependencies by running:
 ```bash
 npm install
 ```
+Don't forget to adjust the config.json file to your server .
 
 ### 2. Create a Discord Bot
 

@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "node main.js",
-    "dev": "nodemon main.js"
+    "dev": "nodemon main.js",
+    "encrypt": "node encrypt.js"
   },
   "dependencies": {
     "canvacord": "^5.2.3",

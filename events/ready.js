@@ -18,7 +18,7 @@ module.exports = {
         module.exports.credentials = JSON.parse(await decryptToString("./helpers/sheets/creds.json.secure"));
         const job = await schedule.scheduleJob('0 0 1 * *', async () => {
             const channel = await client.channels.cache.get(config.serverInfo.leaderboard_id);
-            await channel.send("Leaderboard for month of " + new Date().toLocaleString('default', {month: 'long'}) + " are :");
+            await channel.send("Leaderboard for month of " + new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('default', { month: 'long' }) + " are :");
             await leaderboard.callback();
         });
     }

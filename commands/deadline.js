@@ -62,9 +62,10 @@ module.exports = {
     ],
     slash: true,
     callback: async ({interaction, args}) => {
-        if (!interaction.reply){
+        if (!interaction.replied) {
             interaction.reply({
                 content: "Working on it",
+                ephemeral: true,
             });
         }else {
             interaction.editReply({

@@ -9,12 +9,13 @@ module.exports = {
   description: "Get the highest 10 members",
   slash: true,
   category: "Leaderboard",
-  callback: async (interaction = null) => {
-    if (interaction) {
-      interaction.reply({
-        content: "Working on it",
-      });
-    }
+  callback: async (interaction) => {
+      console.log(interaction);
+      if (interaction !== "Bot fired"){
+          interaction.reply({content : "Working on it", ephemeral : true});
+      }else {
+          client.channels.cache.get(config.serverInfo.leaderboard_id).send("Leaderboard for month of " + new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('default', { month: 'long' }) + " are :");
+      }
     const leaderboard = await getLeaderboard();
     for (let rank = 0; rank < 10; ++rank) {
       if (leaderboard.length <= rank) {
@@ -23,7 +24,7 @@ module.exports = {
       const user = await client.users.fetch(leaderboard[rank].userID);
       const RankCard = await card(user, rank + 1);
       RankCard.build({ fontX: "Arial", fontY: "Arial" }).then((buffer) => {
-        if (interaction){
+        if (interaction !== "Bot fired"){
           interaction.followUp({
             files: [{ attachment: buffer }],
           });
@@ -35,7 +36,7 @@ module.exports = {
         }
       });
     }
-    if (interaction){
+    if (interaction !== "Bot fired"){
       interaction.editReply({
         content: `Here is the leaderboard`,
       });

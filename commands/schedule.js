@@ -96,6 +96,13 @@ module.exports = {
             const nowDate = new Date();
             const date = new Date(nowDate.getFullYear(), month - 1, day, hour ? hour : 0, minute ? minute : 0, 0, 0);
 
+            if (date < nowDate) {
+                await interaction.editReply({
+                    content: `Please enter a valid date`,
+                });
+                return;
+            }
+
             // Set the time at which the deadline will be announced
             const job = schedule.scheduleJob(date, async () => {
                 await deadline.callback({

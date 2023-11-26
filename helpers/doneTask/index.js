@@ -25,6 +25,7 @@ const calculateTaskPoints = (startDate, endDate, submitDate) => {
 
 const doneTask = async (message) => {
 
+    let taskDetails; // Declare taskDetails outside the try block
     //Get the parent channel of the thread
     const doneChannel = await getParentChannel(message.channelId)
 
@@ -51,7 +52,7 @@ const doneTask = async (message) => {
 
     //Check if the task exists
     try {
-        const taskDetails = await getTask(track, taskNumber);
+        taskDetails = await getTask(track, taskNumber);
     } catch (e) {
         console.log("Task doesn't exist in the spreadsheet");
         message.reply('Task doesn\'t exist in the spreadsheet')

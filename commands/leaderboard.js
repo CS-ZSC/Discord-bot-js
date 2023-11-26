@@ -10,9 +10,8 @@ module.exports = {
   slash: true,
   category: "Leaderboard",
   callback: async (interaction) => {
-      console.log(interaction);
       if (interaction !== "Bot fired"){
-          interaction.reply({content : "Working on it", ephemeral : true});
+          console.log("interaction fired");
       }else {
           client.channels.cache.get(config.serverInfo.leaderboard_id).send("Leaderboard for month of " + new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('default', { month: 'long' }) + " are :");
       }
@@ -25,7 +24,7 @@ module.exports = {
       const RankCard = await card(user, rank + 1);
       RankCard.build({ fontX: "Arial", fontY: "Arial" }).then((buffer) => {
         if (interaction !== "Bot fired"){
-          interaction.followUp({
+          interaction.channel.send({
             files: [{ attachment: buffer }],
           });
         }else {
@@ -34,11 +33,6 @@ module.exports = {
             files: [{ attachment: buffer }],
           });
         }
-      });
-    }
-    if (interaction !== "Bot fired"){
-      interaction.editReply({
-        content: `Here is the leaderboard`,
       });
     }
   },

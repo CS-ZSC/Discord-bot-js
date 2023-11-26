@@ -70,7 +70,7 @@ module.exports = {
     }
     // interaction is provided only for a slash command
     interaction.editReply({
-      content: `Good job! Here is your feedback on that task: \n ${feedback}`,
+      content: `Good job! Here is your feedback on that task: \n${feedback}`,
       ephemeral: true,
     });
   },

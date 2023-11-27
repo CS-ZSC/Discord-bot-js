@@ -4,6 +4,8 @@ const times = require("../helpers/time/handlers");
 const {getSheet} = require("../helpers/sheets/index");
 const {getMembers} = require("../helpers/getTrackMembers/index");
 const announce = require("../helpers/announce");
+const config = require("../config.json");
+const {client} = require("../main");
 
 module.exports = {
     name: "deadline",
@@ -67,7 +69,7 @@ module.exports = {
                 content: "Working on it",
                 ephemeral: true,
             });
-        }else {
+        } else {
             interaction.editReply({
                 content: "Working on it",
             });
@@ -76,6 +78,67 @@ module.exports = {
         const track = args[0];
         const duration = args[1];
         const task = args[2];
+        let trackcol = -1;
+        try {
+            // Get the sheet and load Its cells
+            let sheet = await getSheet(`tasks`);
+            for (let col = 0; col < 7; col++) {
+                await sheet.loadCells({
+                    startRowIndex: 0,
+                    endRowIndex: 1,
+                    startColumnIndex: col,
+                    endColumnIndex: col + 1
+                });
+                const cell = sheet.getCell(0, col);
+                if (cell.value === track) {
+                    trackcol = col;
+                    break;
+                }
+            }
+            if (trackcol === -1) {
+                console.log("Track not found");
+                interaction.editReply({
+                    content: `Track not found`,
+                });
+                return;
+            }
+            await sheet.loadCells({
+                startRowIndex: task,
+                endRowIndex: task + 1,
+                startColumnIndex: trackcol,
+                endColumnIndex: trackcol + 1
+            });
+            const contentCell = sheet.getCell(task, trackcol);
+            const content = await contentCell.value;
+            const doneChannelId = await config.tasksChannels[track];
+            const doneChannel = await client.channels.fetch(doneChannelId);
+            const thread = await doneChannel.threads.create({
+                name: `Task-${task}`,
+                autoArchiveDuration: 60,
+                reason: 'Tread for task',
+            });
+            if (content === null || content === undefined || content === '') {
+                interaction.editReply({content: "please put your task in the designated area "});
+                return;
+            }
+            await thread.send({
+                content: content
+            });
+        } catch (e) {
+            console.log("Error updating the sheet", e);
+            interaction.editReply({
+                content: `Error updating the sheet, Mention a bot admin`,
+            });
+            return;
+        }
+        const finishedTaskChannelId = await config.finishTaskChannel[track];
+        const finishedTaskChannel = await client.channels.fetch(finishedTaskChannelId);
+        const thread = await finishedTaskChannel.threads.create({
+            name: `Done Task-${task}`,
+            autoArchiveDuration: 60,
+            reason: 'Tread for task',
+        });
+        await thread.send({content: `After you finish the task, please write done in this thread`});
 
         // Initializing start and end date
         const date = new Date();
@@ -102,29 +165,28 @@ module.exports = {
             startingDateCell.value = startingDate;
             endingDateCell.value = endingDate;
 
-      // Commit the changes
-      await sheet.saveUpdatedCells();
-    } catch (e) {
-      console.log("Error updating the sheet", e);
-      interaction.editReply({
-        content: `Error updating the sheet, Mention a bot admin`,
-      });
-      return;
-    }
-    let members;
-    if (track === 'science') {
-      members = await getMembers('cs');
-    }
-    else {
-      members = await getMembers(track);
-    }
-    announce.announce({
-      content: `${members} You got a task from ${startingDate} to ${endingDate}`,
-    });
+            // Commit the changes
+            await sheet.saveUpdatedCells();
+        } catch (e) {
+            console.log("Error updating the sheet", e);
+            interaction.editReply({
+                content: `Error updating the sheet, Mention a bot admin`,
+            });
+            return;
+        }
+        let members;
+        if (track === 'science') {
+            members = await getMembers('cs');
+        } else {
+            members = await getMembers(track);
+        }
+        announce.announce({
+            content: `${members} You got a task from ${startingDate} to ${endingDate}`,
+        });
 
         // interaction is provided only for a slash command
         interaction.editReply({
             content: `added ${task} in ${track} from ${startingDate} to ${endingDate}`,
         });
-    },
+    }
 };

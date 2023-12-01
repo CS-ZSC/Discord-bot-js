@@ -90,7 +90,7 @@ module.exports = {
                     endColumnIndex: col + 1
                 });
                 const cell = sheet.getCell(0, col);
-                if (cell.value === track) {
+                if (cell.value.lowercase === track.lowercase) {
                     trackcol = col;
                     break;
                 }
@@ -112,15 +112,15 @@ module.exports = {
             const content = await contentCell.value;
             const doneChannelId = await config.tasksChannels[track];
             const doneChannel = await client.channels.fetch(doneChannelId);
+            if (content === null || content === undefined || content === '') {
+                interaction.editReply({content: "please put your task in the designated area "});
+                return;
+            }
             const thread = await doneChannel.threads.create({
                 name: `Task-${task}`,
                 autoArchiveDuration: 60,
                 reason: 'Tread for task',
             });
-            if (content === null || content === undefined || content === '') {
-                interaction.editReply({content: "please put your task in the designated area "});
-                return;
-            }
             await thread.send({
                 content: content
             });

@@ -90,7 +90,7 @@ module.exports = {
                     endColumnIndex: col + 1
                 });
                 const cell = sheet.getCell(0, col);
-                if (cell.value.lowercase === track.lowercase) {
+                if (cell.value === track) {
                     trackcol = col;
                     break;
                 }

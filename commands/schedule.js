@@ -58,6 +58,10 @@ module.exports = {
                     value: "basic_ai",
                 },
                 {
+                    name: "Ras AI",
+                    value: "ras_ai",
+                },
+                {
                     name: "Science",
                     value: "science",
                 },

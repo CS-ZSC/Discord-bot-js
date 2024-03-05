@@ -86,7 +86,7 @@ module.exports = {
         try {
             // Get the sheet and load Its cells
             let sheet = await getSheet(`tasks`);
-            for (let col = 0; col < 7; col++) {
+            for (let col = 0; col < 8; col++) {
                 await sheet.loadCells({
                     startRowIndex: 0,
                     endRowIndex: 1,

@@ -21,14 +21,14 @@ module.exports = {
         },
         {
             name: "hour",
-            description: "Please enter the hour, 24 hour format [optional]",
-            required: false,
+            description: "Please enter the hour, 24 hour format ",
+            required: true,
             type: 3,
         },
         {
             name: "minute",
-            description: "Please enter the minute [optional]",
-            required: false,
+            description: "Please enter the minute",
+            required: true,
             type: 3,
         },
         {

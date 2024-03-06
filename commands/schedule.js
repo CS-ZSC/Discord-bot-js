@@ -98,9 +98,7 @@ module.exports = {
 
             // Calculate the duration
             const nowDate = new Date();
-            const date = new Date(nowDate.getFullYear(), month - 1, day, hour ? hour : 0, minute ? minute : 0, 0, 0);
-            nowDate.setUTCHours(nowDate.getUTCHours() + 2);
-            date.setUTCHours(date.getUTCHours() + 2);
+            const date = new Date(nowDate.getFullYear(), month - 1, day, hour || 0, minute || 0, 0, 0);
 
             if (date < nowDate) {
                 await interaction.editReply({

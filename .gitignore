@@ -4,3 +4,4 @@ helpers/sheets/creds.json
 *.env
 confidential
 .creds.json
+.idea

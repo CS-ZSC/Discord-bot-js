@@ -59,6 +59,8 @@ client.once('ready', async () => {
                 engagement: {
                     normal: 1,
                     extra: 5,
+                    // Note: You can edit the extra channels for your needs. 
+                    // currently, we use the `materials` as extra channels in our discord server (IEEE-CS'26).
                     extraChannels: guild.channels.cache.filter(channel => channel.name === "materials").map(channel => channel.id)
                 },
                 tasks: {

@@ -1,11 +1,12 @@
-const {generateDateString} = require("../time/handlers");
-const {getTask, insertTaskDone} = require('../sheets/index');
+const { generateDateString } = require("../time/handlers");
+const { getTask, insertTaskDone } = require('../sheets/index');
 const config = require('../../config.json');
 const addPointsTo = require("../addPoints/index");
-const {getParentChannel} = require("../getParentChannel");
-const {client} = require("../../main");
-const {alreadyDone} = require("../aleadyDone");
-const {doesTaskExists} = require("../sheets");
+const { getParentChannel } = require("../getParentChannel");
+const { client } = require("../../main");
+const { alreadyDone } = require("../aleadyDone");
+const { doesTaskExists } = require("../sheets");
+const { getKeyByValue } = require("../utils");
 
 const POINTS_PER_DAY = config.points.tasks.pointsPerDay;
 const BONUS = config.points.tasks.bonus;
@@ -34,7 +35,7 @@ const doneTask = async (message) => {
 
 
     //Get the track from the config file
-    const track = config.doneChannels[doneChannel.id];
+    const track = getKeyByValue(config.finishTaskChannel, doneChannel.id);
     if (!track) {
         console.log("User entered Done Task in wrong channels, or config.json is incorrect");
         message.reply('You entered Done Task in wrong channels')

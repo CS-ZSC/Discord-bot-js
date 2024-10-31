@@ -15,6 +15,15 @@ async function getBufferFromUrl(url) {
   });
 }
 
+function getKeyByValue(object, value) {
+  for (const [key, val] of Object.entries(object)) {
+    if (val === value) {
+      return key;
+    }
+  }
+  return undefined;
+}
+
 
 
 const _SCIENCE_XP = 5;
@@ -32,4 +41,5 @@ let channelsPoints = {
 module.exports = {
   getBufferFromUrl,
   channelsPoints,
+  getKeyByValue
 };

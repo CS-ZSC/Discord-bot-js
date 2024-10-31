@@ -1,4 +1,4 @@
-const {getTaskFeedback} = require("../helpers/sheets");
+const { getTaskFeedback } = require("../helpers/sheets");
 
 module.exports = {
     name: "feedback",
@@ -33,10 +33,6 @@ module.exports = {
                     value: "basic_ai",
                 },
                 {
-                    name: "Ras AI",
-                    value: "ras_ai",
-                },
-                {
                     name: "Science",
                     value: "science",
                 },
@@ -44,6 +40,14 @@ module.exports = {
                     name: "Rookies",
                     value: "rookies",
                 },
+                {
+                    name: "Game Development",
+                    value: "game_development"
+                },
+                {
+                    name: "Cyber Security",
+                    value: "cyber_security"
+                }
             ],
         },
         {
@@ -54,7 +58,7 @@ module.exports = {
         },
     ],
     slash: true,
-    callback: async ({interaction, args}) => {
+    callback: async ({ interaction, args }) => {
         interaction.reply({
             content: "Working on it",
             ephemeral: true,

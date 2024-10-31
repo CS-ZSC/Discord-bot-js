@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node main.js",
     "dev": "nodemon main.js",
-    "encrypt": "node encrypt.js"
+    "encrypt": "node encrypt.js",
+    "gen-config": "node ./scripts/gen-config.js"
   },
   "dependencies": {
     "canvacord": "^5.2.3",

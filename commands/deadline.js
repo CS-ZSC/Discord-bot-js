@@ -39,10 +39,7 @@ module.exports = {
                     name: "Basic AI",
                     value: "basic_ai",
                 },
-                {
-                    name: "Ras AI",
-                    value: "ras_ai",
-                },
+               
                 {
                     name: "Science",
                     value: "science",
@@ -51,6 +48,14 @@ module.exports = {
                     name: "Rookies",
                     value: "rookies",
                 },
+                {
+                    name: "Game Development",
+                    value: "game_development"
+                },
+                {
+                    name: "Cyber Security",
+                    value: "cyber_security"
+                }
             ],
         },
         {

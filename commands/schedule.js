@@ -90,6 +90,8 @@ module.exports = {
     ],
     slash: true,
     callback: async ({ interaction, args }) => {
+
+        console.log(`[command/schedule] args: ${args}`);
         try {
             // Send an initial response or defer the reply
             await interaction.deferReply({ ephemeral: true });

@@ -73,6 +73,7 @@ module.exports = {
     ],
     slash: true,
     callback: async ({ interaction, args }) => {
+        console.log(`[command/deadline] args: ${args}`);
         if (!interaction.replied) {
             interaction.reply({
                 content: "Working on it",
@@ -183,9 +184,9 @@ module.exports = {
             });
             return;
         }
-        
-        let mention = `<@&${track=== 'science' ? config.roles.cs : config.roles[track]}>`
-        
+
+        let mention = `<@&${track === 'science' ? config.roles.cs : config.roles[track]}>`
+
         announce.announce({
             content: `${mention} You got a task from ${startingDate} to ${endingDate}`,
         });

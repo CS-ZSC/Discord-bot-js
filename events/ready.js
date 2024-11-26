@@ -4,6 +4,7 @@ const config = require('../config.json');
 const { decryptToString } = require("../auth/secure-file");
 const schedule = require("node-schedule");
 const leaderboard = require("../commands/leaderboard");
+const { prevMonthName } = require("../helpers/utils");
 const { credentials } = require("../auth/google");
 
 module.exports = {
@@ -18,9 +19,11 @@ module.exports = {
         }).setDefaultPrefix("!");
         const job = await schedule.scheduleJob('0 0 1 * *', async () => {
             const channel = await client.channels.cache.get(config.serverInfo.leaderboard_id);
-            await channel.send("Leaderboard for month of " + new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('default', { month: 'long' }) + " are :");
+            await channel.send(`Leaderboard for month of ${prevMonthName()} are :`);
+
             await leaderboard.callback("Bot fired");
         });
+
 
         module.exports.creds = await credentials();
     }

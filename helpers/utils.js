@@ -24,6 +24,14 @@ function getKeyByValue(object, value) {
   return undefined;
 }
 
+function prevMonthName() {
+  const previousMonth = new Date();
+  previousMonth.setMonth(previousMonth.getMonth() - 1);
+  const previousMonthName = previousMonth.toLocaleString('default', { month: 'long' });
+
+
+}
+
 
 
 const _SCIENCE_XP = 5;
@@ -41,5 +49,6 @@ let channelsPoints = {
 module.exports = {
   getBufferFromUrl,
   channelsPoints,
-  getKeyByValue
+  getKeyByValue,
+  prevMonthName
 };

@@ -15,7 +15,8 @@
     "discord.js": "^13.6.0",
     "dotenv": "^16.3.1",
     "gh": "^2.8.9",
-    "google-spreadsheet": "^3.2.0",
+    "google-auth-library": "^9.15.0",
+    "google-spreadsheet": "^4.1.4",
     "mongoose": "^6.2.4",
     "node-schedule": "^2.1.1",
     "wokcommands": "^1.5.3"

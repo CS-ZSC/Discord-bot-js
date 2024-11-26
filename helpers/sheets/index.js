@@ -1,6 +1,6 @@
 const { GoogleSpreadsheet } = require("google-spreadsheet");
-const { decryptToString } = require("./secure-file");
-
+const { decryptToString } = require("../../auth/secure-file");
+const { JWT } = require('google-auth-library');
 require("dotenv").config();
 
 /**
@@ -8,11 +8,23 @@ require("dotenv").config();
  * @returns {object} The Google sheet document
  */
 const connect = async () => {
-  const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID);
-  const {credentials} = require("../../events/ready");
-  await doc.useServiceAccountAuth(credentials);
+  try {
+    let { creds } = require("../../events/ready");
+
+    const jwt = new JWT({
+      email: creds.client_email,
+      key: creds.private_key,
+      scopes: [
+        'https://www.googleapis.com/auth/spreadsheets',
+      ],
+    });
+    const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID, jwt);
+
   await doc.loadInfo(); // loads document properties and worksheets
   return doc;
+  } catch (err) {
+    console.error(`Couldn't connect to Google Spreadsheet: ${err.toString()}`)
+  }
 };
 
 /**

@@ -59,6 +59,8 @@ module.exports = {
     ],
     slash: true,
     callback: async ({ interaction, args }) => {
+        
+        console.log(`[command/feedback] args: ${args}`);
         interaction.reply({
             content: "Working on it",
             ephemeral: true,

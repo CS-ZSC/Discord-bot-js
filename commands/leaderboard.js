@@ -10,11 +10,12 @@ module.exports = {
   slash: true,
   category: "Leaderboard",
   callback: async (interaction) => {
-      if (interaction !== "Bot fired"){
-          console.log("interaction fired");
-      }else {
-          client.channels.cache.get(config.serverInfo.leaderboard_id).send("Leaderboard for month of " + new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('default', { month: 'long' }) + " are :");
-      }
+    console.log(`[command/leaderboard] running`);
+    if (interaction !== "Bot fired") {
+      console.log("interaction fired");
+    } else {
+      client.channels.cache.get(config.serverInfo.leaderboard_id).send("Leaderboard for month of " + new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('default', { month: 'long' }) + " are :");
+    }
     const leaderboard = await getLeaderboard();
     for (let rank = 0; rank < 10; ++rank) {
       if (leaderboard.length <= rank) {
@@ -23,11 +24,11 @@ module.exports = {
       const user = await client.users.fetch(leaderboard[rank].userID);
       const RankCard = await card(user, rank + 1);
       RankCard.build({ fontX: "Arial", fontY: "Arial" }).then((buffer) => {
-        if (interaction !== "Bot fired"){
+        if (interaction !== "Bot fired") {
           interaction.channel.send({
             files: [{ attachment: buffer }],
           });
-        }else {
+        } else {
           const channel = client.channels.cache.get(config.serverInfo.leaderboard_id);
           channel.send({
             files: [{ attachment: buffer }],

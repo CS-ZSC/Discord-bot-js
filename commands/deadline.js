@@ -74,12 +74,6 @@ module.exports = {
     slash: true,
     callback: async ({ interaction, args }) => {
         console.log(`[command/deadline] args: ${args}`);
-
-        // Initializing start and end date
-        const date = new Date();
-        let startingDate = times.strDayFirstSecond(date);
-        let endingDate = times.strDayLastSecond(date, duration);
-
         if (!interaction.replied) {
             interaction.reply({
                 content: "Working on it",
@@ -90,10 +84,16 @@ module.exports = {
                 content: "Working on it",
             });
         }
-
+        
         const track = args[0];
         const duration = args[1];
         const task = args[2];
+
+        // Initializing start and end date
+        const date = new Date();
+        let startingDate = times.strDayFirstSecond(date);
+        let endingDate = times.strDayLastSecond(date, duration);
+        
         let trackcol = -1;
         try {
             // Get the sheet and load Its cells

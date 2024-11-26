@@ -92,6 +92,8 @@ module.exports = {
         try {
             // Get the sheet and load Its cells
             let sheet = await getSheet(`tasks`);
+
+            // WARNING: if you wan to increase the number of tracks, you should increase the number of columns that be checked here.
             for (let col = 0; col < 10; col++) {
                 await sheet.loadCells({
                     startRowIndex: 0,
@@ -132,7 +134,7 @@ module.exports = {
                 reason: 'Tread for task',
             });
             await thread.send({
-                content: content
+                content: `**Deadline:** ${endingDate}\n\n **Instruction:** After finishing your task, you should write \`Done\` in <#${config.finishTaskChannel[track]}>  \n${content}`
             });
         } catch (e) {
             console.log("Error updating the sheet", e);
@@ -141,8 +143,8 @@ module.exports = {
             });
             return;
         }
-        const finishedTaskChannelId = await config.finishTaskChannel[track];
-        const finishedTaskChannel = await client.channels.fetch(finishedTaskChannelId);
+
+        const finishedTaskChannel = await client.channels.fetch(config.finishTaskChannel[track]);
         const thread = await finishedTaskChannel.threads.create({
             name: `Done Task-${task}`,
             autoArchiveDuration: 60,

@@ -1,11 +1,11 @@
 // Description: This file contains the code for the schedule command
 
 const times = require("../helpers/time/handlers");
-const {getSheet} = require("../helpers/sheets/index");
-const {getMembers} = require("../helpers/getTrackMembers/index");
+const { getSheet } = require("../helpers/sheets/index");
+const { getMembers } = require("../helpers/getTrackMembers/index");
 const announce = require("../helpers/announce");
 const config = require("../config.json");
-const {client} = require("../main");
+const { client } = require("../main");
 
 module.exports = {
     name: "deadline",
@@ -39,7 +39,7 @@ module.exports = {
                     name: "Basic AI",
                     value: "basic_ai",
                 },
-               
+
                 {
                     name: "Science",
                     value: "science",
@@ -72,7 +72,7 @@ module.exports = {
         },
     ],
     slash: true,
-    callback: async ({interaction, args}) => {
+    callback: async ({ interaction, args }) => {
         if (!interaction.replied) {
             interaction.reply({
                 content: "Working on it",
@@ -122,7 +122,7 @@ module.exports = {
             const doneChannelId = await config.tasksChannels[track];
             const doneChannel = await client.channels.fetch(doneChannelId);
             if (content === null || content === undefined || content === '') {
-                interaction.editReply({content: "please put your task in the designated area "});
+                interaction.editReply({ content: "please put your task in the designated area " });
                 return;
             }
             const thread = await doneChannel.threads.create({
@@ -147,7 +147,7 @@ module.exports = {
             autoArchiveDuration: 60,
             reason: 'Tread for task',
         });
-        await thread.send({content: `After you finish the task, please write done in this thread`});
+        await thread.send({ content: `After you finish the task, please write done in this thread` });
 
         // Initializing start and end date
         const date = new Date();

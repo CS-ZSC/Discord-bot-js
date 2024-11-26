@@ -74,6 +74,8 @@ module.exports = {
     slash: true,
     callback: async ({ interaction, args }) => {
         console.log(`[command/deadline] args: ${args}`);
+
+        
         if (!interaction.replied) {
             interaction.reply({
                 content: "Working on it",
@@ -84,14 +86,22 @@ module.exports = {
                 content: "Working on it",
             });
         }
-
+        
         const track = args[0];
         const duration = args[1];
         const task = args[2];
+
+        // Initializing start and end date
+        const date = new Date();
+        let startingDate = times.strDayFirstSecond(date);
+        let endingDate = times.strDayLastSecond(date, duration);
+        
         let trackcol = -1;
         try {
             // Get the sheet and load Its cells
             let sheet = await getSheet(`tasks`);
+
+            // WARNING: if you wan to increase the number of tracks, you should increase the number of columns that be checked here.
             for (let col = 0; col < 10; col++) {
                 await sheet.loadCells({
                     startRowIndex: 0,
@@ -132,7 +142,7 @@ module.exports = {
                 reason: 'Tread for task',
             });
             await thread.send({
-                content: content
+                content: `**Deadline:** ${endingDate}\n\n **Instruction:** After finishing your task, you should write \`Done\` in <#${config.finishTaskChannel[track]}>  \n${content}`
             });
         } catch (e) {
             console.log("Error updating the sheet", e);
@@ -141,8 +151,8 @@ module.exports = {
             });
             return;
         }
-        const finishedTaskChannelId = await config.finishTaskChannel[track];
-        const finishedTaskChannel = await client.channels.fetch(finishedTaskChannelId);
+
+        const finishedTaskChannel = await client.channels.fetch(config.finishTaskChannel[track]);
         const thread = await finishedTaskChannel.threads.create({
             name: `Done Task-${task}`,
             autoArchiveDuration: 60,
@@ -150,10 +160,7 @@ module.exports = {
         });
         await thread.send({ content: `After you finish the task, please write done in this thread` });
 
-        // Initializing start and end date
-        const date = new Date();
-        let startingDate = times.strDayFirstSecond(date);
-        let endingDate = times.strDayLastSecond(date, duration);
+
 
         try {
             // Get the sheet and load Its cells

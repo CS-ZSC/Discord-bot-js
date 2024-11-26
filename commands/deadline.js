@@ -74,6 +74,12 @@ module.exports = {
     slash: true,
     callback: async ({ interaction, args }) => {
         console.log(`[command/deadline] args: ${args}`);
+
+        // Initializing start and end date
+        const date = new Date();
+        let startingDate = times.strDayFirstSecond(date);
+        let endingDate = times.strDayLastSecond(date, duration);
+
         if (!interaction.replied) {
             interaction.reply({
                 content: "Working on it",
@@ -152,10 +158,7 @@ module.exports = {
         });
         await thread.send({ content: `After you finish the task, please write done in this thread` });
 
-        // Initializing start and end date
-        const date = new Date();
-        let startingDate = times.strDayFirstSecond(date);
-        let endingDate = times.strDayLastSecond(date, duration);
+
 
         try {
             // Get the sheet and load Its cells

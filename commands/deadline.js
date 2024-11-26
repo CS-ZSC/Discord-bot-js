@@ -92,7 +92,7 @@ module.exports = {
         try {
             // Get the sheet and load Its cells
             let sheet = await getSheet(`tasks`);
-            for (let col = 0; col < 8; col++) {
+            for (let col = 0; col < 10; col++) {
                 await sheet.loadCells({
                     startRowIndex: 0,
                     endRowIndex: 1,
@@ -188,12 +188,12 @@ module.exports = {
         let mention = `<@&${track === 'science' ? config.roles.cs : config.roles[track]}>`
 
         announce.announce({
-            content: `${mention} You got a task from ${startingDate} to ${endingDate}`,
+            content: `${mention} You got a task from \`${startingDate}\` to \`${endingDate}\``,
         });
 
         // interaction is provided only for a slash command
         interaction.editReply({
-            content: `added ${task} in ${track} from ${startingDate} to ${endingDate}`,
+            content: `added ${task} in ${track} from \`${startingDate}\` to \`${endingDate}\``,
         });
     }
 };

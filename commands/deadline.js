@@ -183,14 +183,11 @@ module.exports = {
             });
             return;
         }
-        let members;
-        if (track === 'science') {
-            members = await getMembers('cs');
-        } else {
-            members = await getMembers(track);
-        }
+        
+        let mention = `<@&${track=== 'science' ? config.roles.cs : config.roles[track]}>`
+        
         announce.announce({
-            content: `${members} You got a task from ${startingDate} to ${endingDate}`,
+            content: `${mention} You got a task from ${startingDate} to ${endingDate}`,
         });
 
         // interaction is provided only for a slash command

@@ -7,6 +7,11 @@ require("dotenv").config();
 const SECRET_SALT = process.env.SECRET_SALT;
 const SECRET_PASSPHRASE = process.env.SECRET_PASSPHRASE;
 
+const SECURE_FOLDER_PATH = "auth/secure";
+const SECURE_FOLDER_ABSOLUTE_PATH = path.resolve(SECURE_FOLDER_PATH);
+
+
+
 if (!SECRET_SALT || !SECRET_PASSPHRASE) {
     console.error("Please set the SECRET_SALT and SECRET_PASSPHRASE environment variables.");
     process.exit(1);
@@ -19,6 +24,7 @@ async function encryptFile(inputPath, key = secretKey) {
     const cipher = crypto.createCipheriv(algorithm, key, iv);
 
     const input = await fs.readFile(inputPath, 'utf8');
+    const out_path = `${SECURE_FOLDER_ABSOLUTE_PATH}/creds.json.secure`;
 
     const encrypted = Buffer.concat([cipher.update(input, 'utf8'), cipher.final()]);
     const authTag = cipher.getAuthTag();
@@ -28,9 +34,9 @@ async function encryptFile(inputPath, key = secretKey) {
         auth_tag: authTag.toString('hex'),
         data: encrypted.toString('base64'),
     };
-    await fs.writeFile(`./helpers/sheets/creds.json.secure`, JSON.stringify(result));
+    await fs.writeFile(out_path, JSON.stringify(result));
 
-    console.log(`Encrypted file written to ${inputPath}.secure!`);
+    console.log(`Encrypted file written to ${out_path}!`);
 }
 
 async function decryptToString(inputPath, key = secretKey) {
@@ -56,5 +62,7 @@ async function decryptToString(inputPath, key = secretKey) {
 
 module.exports = {
     encryptFile,
-    decryptToString
+    decryptToString,
+    SECURE_FOLDER_PATH,
+    SECURE_FOLDER_ABSOLUTE_PATH
 }

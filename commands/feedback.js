@@ -59,6 +59,8 @@ module.exports = {
     ],
     slash: true,
     callback: async ({ interaction, args }) => {
+        
+        console.log(`[command/feedback] args: ${args}`);
         interaction.reply({
             content: "Working on it",
             ephemeral: true,
@@ -69,8 +71,11 @@ module.exports = {
 
         let feedback;
         try {
+            console.log(`[command/feedback] getting feedback: track: ${track}, task: ${task}, ${interaction.user.username}`);
             feedback = await getTaskFeedback(track, interaction.user.username, task);
         } catch (e) {
+            
+            console.error(`[command/feedback] couldn't get feedback: track: ${track}, task: ${task}, ${interaction.user.username}`);
             interaction.editReply({
                 content: `${e.message || e}`,
             });

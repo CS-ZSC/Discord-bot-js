@@ -1,11 +1,11 @@
 // Description: This file contains the code for the schedule command
 
 const times = require("../helpers/time/handlers");
-const {getSheet} = require("../helpers/sheets/index");
-const {getMembers} = require("../helpers/getTrackMembers/index");
+const { getSheet } = require("../helpers/sheets/index");
+const { getMembers } = require("../helpers/getTrackMembers/index");
 const announce = require("../helpers/announce");
 const config = require("../config.json");
-const {client} = require("../main");
+const { client } = require("../main");
 
 module.exports = {
     name: "deadline",
@@ -39,7 +39,7 @@ module.exports = {
                     name: "Basic AI",
                     value: "basic_ai",
                 },
-               
+
                 {
                     name: "Science",
                     value: "science",
@@ -72,7 +72,8 @@ module.exports = {
         },
     ],
     slash: true,
-    callback: async ({interaction, args}) => {
+    callback: async ({ interaction, args }) => {
+        console.log(`[command/deadline] args: ${args}`);
         if (!interaction.replied) {
             interaction.reply({
                 content: "Working on it",
@@ -83,15 +84,23 @@ module.exports = {
                 content: "Working on it",
             });
         }
-
+        
         const track = args[0];
         const duration = args[1];
         const task = args[2];
+
+        // Initializing start and end date
+        const date = new Date();
+        let startingDate = times.strDayFirstSecond(date);
+        let endingDate = times.strDayLastSecond(date, duration);
+        
         let trackcol = -1;
         try {
             // Get the sheet and load Its cells
             let sheet = await getSheet(`tasks`);
-            for (let col = 0; col < 8; col++) {
+
+            // WARNING: if you wan to increase the number of tracks, you should increase the number of columns that be checked here.
+            for (let col = 0; col < 10; col++) {
                 await sheet.loadCells({
                     startRowIndex: 0,
                     endRowIndex: 1,
@@ -122,7 +131,7 @@ module.exports = {
             const doneChannelId = await config.tasksChannels[track];
             const doneChannel = await client.channels.fetch(doneChannelId);
             if (content === null || content === undefined || content === '') {
-                interaction.editReply({content: "please put your task in the designated area "});
+                interaction.editReply({ content: "please put your task in the designated area " });
                 return;
             }
             const thread = await doneChannel.threads.create({
@@ -131,7 +140,7 @@ module.exports = {
                 reason: 'Tread for task',
             });
             await thread.send({
-                content: content
+                content: `**Deadline:** ${endingDate}\n\n **Instruction:** After finishing your task, you should write \`Done\` in <#${config.finishTaskChannel[track]}>  \n${content}`
             });
         } catch (e) {
             console.log("Error updating the sheet", e);
@@ -140,19 +149,16 @@ module.exports = {
             });
             return;
         }
-        const finishedTaskChannelId = await config.finishTaskChannel[track];
-        const finishedTaskChannel = await client.channels.fetch(finishedTaskChannelId);
+
+        const finishedTaskChannel = await client.channels.fetch(config.finishTaskChannel[track]);
         const thread = await finishedTaskChannel.threads.create({
             name: `Done Task-${task}`,
             autoArchiveDuration: 60,
             reason: 'Tread for task',
         });
-        await thread.send({content: `After you finish the task, please write done in this thread`});
+        await thread.send({ content: `After you finish the task, please write done in this thread` });
 
-        // Initializing start and end date
-        const date = new Date();
-        let startingDate = times.strDayFirstSecond(date);
-        let endingDate = times.strDayLastSecond(date, duration);
+
 
         try {
             // Get the sheet and load Its cells
@@ -183,19 +189,16 @@ module.exports = {
             });
             return;
         }
-        let members;
-        if (track === 'science') {
-            members = await getMembers('cs');
-        } else {
-            members = await getMembers(track);
-        }
+
+        let mention = `<@&${track === 'science' ? config.roles.cs : config.roles[track]}>`
+
         announce.announce({
-            content: `${members} You got a task from ${startingDate} to ${endingDate}`,
+            content: `${mention} You got a task from \`${startingDate}\` to \`${endingDate}\``,
         });
 
         // interaction is provided only for a slash command
         interaction.editReply({
-            content: `added ${task} in ${track} from ${startingDate} to ${endingDate}`,
+            content: `added ${task} in ${track} from \`${startingDate}\` to \`${endingDate}\``,
         });
     }
 };

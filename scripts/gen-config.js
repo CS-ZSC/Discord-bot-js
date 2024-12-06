@@ -1,6 +1,6 @@
 const { Client, Intents } = require('discord.js');
 const fs = require('fs');
-const { decryptToString } = require('../helpers/sheets/secure-file');
+const { decryptToString } = require('../auth/secure-file');
 
 
 const { guild_id } = require("../server.json")

@@ -88,7 +88,7 @@ module.exports = {
         });
 
         console.log(`\
-feedback has been sent.
+feedback has been sent to ${interaction.user.globalName} (${interaction.user.username})
     content: "${feedback}"
         `)
     },

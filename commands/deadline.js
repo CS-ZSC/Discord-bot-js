@@ -6,6 +6,7 @@ const { getMembers } = require("../helpers/getTrackMembers/index");
 const announce = require("../helpers/announce");
 const config = require("../config.json");
 const { client } = require("../main");
+const { Interaction } = require("discord.js");
 
 module.exports = {
     name: "deadline",
@@ -74,6 +75,16 @@ module.exports = {
     slash: true,
     callback: async ({ interaction, args }) => {
         console.log(`[command/deadline] args: ${args}`);
+
+
+        const member = interaction.member;
+        if (!member?.permissions.has("ADMINISTRATOR")) {
+            interaction.reply({
+                content: "You don't have the permissions to run this command. Please, don't play",
+                ephemeral: true,
+            });
+        }
+        
         if (!interaction.replied) {
             interaction.reply({
                 content: "Working on it",

@@ -2,7 +2,6 @@ module.exports = {
     name: "interactionCreate",
     once: true,
     async execute(interaction) {
-        console.log(interaction);
         if (interaction.isCommand()) {
             console.debug(`
  DEBUG: Command executed 

@@ -50,6 +50,12 @@ client.once('ready', async () => {
                     return [role.name.toLowerCase().replace("-", "_"), role.id]
                 }),
             ),
+            contest: Object.fromEntries(
+                guild.channels.cache.filter(channel => channel.parent && channel.parent.name.toLowerCase() === "contest" && channel.type === "GUILD_TEXT").map(channel => {
+                    return [channel.name.toLowerCase().replace("-", "_"), channel.id]
+                }
+                )
+            ),
             serverInfo: {
                 GUILD_ID: guild_id,
                 announcements_id: guild.channels.cache.find(role => role.name === "bot-announcements").id,

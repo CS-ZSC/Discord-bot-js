@@ -7,7 +7,8 @@
     "start": "node main.js",
     "dev": "nodemon main.js",
     "encrypt": "node encrypt.js",
-    "gen-config": "node ./scripts/gen-config.js"
+    "gen-config": "node ./scripts/gen-config.js",
+    "call-team": "node ./scripts/call-team.js"
   },
   "dependencies": {
     "canvacord": "^5.2.3",

@@ -131,6 +131,7 @@ const insertTaskDone = async (track, author, taskNumber, dateStr) => {
  * @param {string} track - The track of the user
  */
 const userDoneTask = async (taskNumber, author, track) => {
+  console.log(`Checking user done for:`, author);
   try {
     const userRow = await getUser(track, author.username);
 
@@ -139,7 +140,7 @@ const userDoneTask = async (taskNumber, author, track) => {
       throw new Error("Couldn't find the author in the spreadsheet")
     }
 
-    return userRow[`Task_${taskNumber}`] !== undefined;
+    return userRow.get(`Task_${taskNumber}`) !== undefined;
   } catch (err) {
     console.error(`[Checking the user has done the task]: ${err}`);
   }
@@ -153,14 +154,17 @@ const userDoneTask = async (taskNumber, author, track) => {
  */
 const getTaskFeedback = async (track, username, taskNumber) => {
   const sheet = await getSheet(`${track}_FB`);
-
+  console.debug(`Getting feedback for: "${username}"\n track: ${track}\n taskNumber: ${taskNumber}`);
   try {
     await getTask(track, taskNumber);
   } catch (e) {
     throw new Error(e.message);
   }
 
-  if (!await userDoneTask(taskNumber, { username }, track)) {
+  let is_user_done = await userDoneTask(taskNumber, { username }, track);
+  console.log("is_user_done? ", is_user_done);
+
+  if (!is_user_done) {
     throw new Error(`You didn't finish this task yet`);
   }
 
@@ -170,24 +174,28 @@ const getTaskFeedback = async (track, username, taskNumber) => {
   if (!userRow) {
     throw new Error(`Looks like you are not in the ${track} track`);
   }
+  try {
+    const taskRow = userRow._rowNumber;
+    const taskCol = parseInt(taskNumber) + 2;
 
-  const taskRow = userRow.rowIndex;
-  const taskCol = parseInt(taskNumber) + 2;
-
-  await sheet.loadCells({
-    startRowIndex: taskRow - 1,
-    endRowIndex: taskRow,
-    startColumnIndex: taskCol,
-    endColumnIndex: taskCol + 1,
-  });
-
-  const feedback = sheet.getCell(taskRow - 1, taskCol).value;
-
-  if (!feedback) {
-    throw new Error(`Looks like your feedback for task ${taskNumber} is not ready yet`);
+    await sheet.loadCells({
+      startRowIndex: taskRow - 1,
+      endRowIndex: taskRow,
+      startColumnIndex: taskCol,
+      endColumnIndex: taskCol + 1,
+    });
+    const feedback = sheet.getCell(taskRow - 1, taskCol).value;
+  
+    if (!feedback) {
+      throw new Error(`Looks like your feedback for task ${taskNumber} is not ready yet`);
+    }
+  
+    return feedback;
+  } catch (e) {
+    console.error(`Couldn't load cells Internal Error: ${e}`, { taskRow, taskCol });
+    return
   }
 
-  return feedback;
 };
 
 module.exports = {

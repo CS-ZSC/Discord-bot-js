@@ -8,7 +8,8 @@
     "dev": "nodemon main.js",
     "encrypt": "node encrypt.js",
     "gen-config": "node ./scripts/gen-config.js",
-    "call-team": "node ./scripts/call-team.js"
+    "call-team": "node ./scripts/call-team.js",
+    "give-roles": "node ./scripts/give-roles.js"
   },
   "dependencies": {
     "canvacord": "^5.2.3",

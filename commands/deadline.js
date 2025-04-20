@@ -119,7 +119,7 @@ module.exports = {
             let sheet = await getSheet(`tasks`);
 
             // WARNING: if you wan to increase the number of tracks, you should increase the number of columns that be checked here.
-            for (let col = 0; col < 10; col++) {
+            for (let col = 0; col < 20; col++) {
                 await sheet.loadCells({
                     startRowIndex: 0,
                     endRowIndex: 1,

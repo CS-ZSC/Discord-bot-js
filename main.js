@@ -1,11 +1,13 @@
+require('log-timestamp');
 const Discord = require("discord.js");
 const Levels = require("discord-xp");
 const fs = require("fs");
+
 require('dotenv').config({ path: './.env' });
+
 const client = new Discord.Client({
     intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS"],
 });
-
 Levels.setURL(process.env.MONGO_URI);
 client.login(process.env.BOT_TOKEN);
 
@@ -31,4 +33,3 @@ process.on('uncaughtException', function (err) {
     console.log('Caught exception: ', err);
 });
 
-module.exports = server;

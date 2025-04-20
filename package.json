@@ -19,6 +19,7 @@
     "gh": "^2.8.9",
     "google-auth-library": "^9.15.0",
     "google-spreadsheet": "^4.1.4",
+    "log-timestamp": "^0.3.0",
     "mongoose": "^6.2.4",
     "node-schedule": "^2.1.1",
     "wokcommands": "^1.5.3"

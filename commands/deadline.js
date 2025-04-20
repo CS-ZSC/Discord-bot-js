@@ -56,6 +56,14 @@ module.exports = {
                 {
                     name: "Cyber Security",
                     value: "cyber_security"
+                },
+                {
+                    name: "Cyber Security (Blue Team)",
+                    value: "cyber_security_blue_team"
+                },
+                {
+                    name: "Cyber Security (Red Team)",
+                    value: "cyber_security_red_team"
                 }
             ],
         },

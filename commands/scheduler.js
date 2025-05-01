@@ -4,7 +4,7 @@ const deadline = require("./deadline");
 module.exports = {
     name: "scheduler",
     description: "schedule task", // Required for slash commands
-    category: "Schedule",
+    category: "Scheduler",
 
     options: [
         {

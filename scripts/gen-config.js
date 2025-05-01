@@ -32,27 +32,31 @@ client.once('ready', async () => {
         }
 
         // Collect configuration information
-
+        const regex = /-/g;
         const config = {
             finishTaskChannel:
                 Object.fromEntries(
                     guild.channels.cache.filter(channel => channel.name === "finished-tasks").map(channel => {
-                        return [channel.parent.name.toLowerCase().replace("-", "_"), channel.id,]
+                        const parent_name = channel.parent.name.toLowerCase().replace(regex, "_");
+                        console.log(`Channel name: ${parent_name}, Channel ID: ${channel.id}`);
+                        return [parent_name, channel.id,]
                     })),
             tasksChannels:
                 Object.fromEntries(
                     guild.channels.cache.filter(channel => channel.name === "tasks").map(channel => {
-                        return [channel.parent.name.toLowerCase().replace("-", "_"), channel.id,]
+                        const parent_name = channel.parent.name.toLowerCase().replace(regex, "_");
+                        console.log(`Channel name: ${parent_name}, Channel ID: ${channel.id}`);
+                        return [parent_name, channel.id,]
                     })
                 ),
             roles: Object.fromEntries(
                 guild.roles.cache.filter(role => !role.name.includes(" ")).map(role => {
-                    return [role.name.toLowerCase().replace("-", "_"), role.id]
+                    return [role.name.toLowerCase().replace(regex, "_"), role.id]
                 }),
             ),
             contest: Object.fromEntries(
                 guild.channels.cache.filter(channel => channel.parent && channel.parent.name.toLowerCase() === "contest" && channel.type === "GUILD_TEXT").map(channel => {
-                    return [channel.name.toLowerCase().replace("-", "_"), channel.id]
+                    return [channel.name.toLowerCase().replace(regex, "_"), channel.id]
                 }
                 )
             ),

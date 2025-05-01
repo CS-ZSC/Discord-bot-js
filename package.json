@@ -1,6 +1,7 @@
 {
   "name": "cs-bot",
   "version": "1.0.0",
+  "license": "MIT",
   "description": "A bot for the CS Discord Server",
   "main": "main.js",
   "scripts": {

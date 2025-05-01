@@ -2,7 +2,7 @@ const schedule = require('node-schedule');
 const deadline = require("./deadline");
 // Description: This file contains the code for the schedule command
 module.exports = {
-    name: "schedule",
+    name: "scheduler",
     description: "schedule task", // Required for slash commands
     category: "Schedule",
 
@@ -72,6 +72,14 @@ module.exports = {
                 {
                     name: "Cyber Security",
                     value: "cyber_security"
+                },
+                {
+                    name: "Cyber Security (Blue Team)",
+                    value: "cyber_security_blue_team"
+                },
+                {
+                    name: "Cyber Security (Red Team)",
+                    value: "cyber_security_red_team"
                 }
             ],
         },

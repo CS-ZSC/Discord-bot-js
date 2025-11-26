@@ -84,8 +84,6 @@ module.exports = {
     callback: async ({ interaction, args }) => {
         console.log(`[command/deadline] args: ${args}`);
 
-        interaction.memberPemissions
-
         const member = interaction.member;
         if (!member?.permissions.has("ADMINISTRATOR")) {
             interaction.reply({

@@ -198,6 +198,23 @@ const getTaskFeedback = async (track, username, taskNumber) => {
 
 };
 
+const submitTask = async (track, author, taskNumber, dateStr, url) => {
+  try {
+    const userRow = await getUser(track, author.username);
+
+    if (userRow === -1 || userRow === '') {
+      throw new Error("Couldn't find the author in the spreadsheet");
+    }
+
+    userRow.set(`Task_${taskNumber}`, `${url} - ${dateStr}`)
+    await userRow.save()
+    return true;
+  } catch (err) {
+    console.error(`[Submitting the user task]: ${err}`);
+    throw err;
+  }
+};
+
 module.exports = {
   getSheet,
   getTask,
@@ -205,4 +222,5 @@ module.exports = {
   insertTaskDone,
   userDoneTask,
   getTaskFeedback,
+  submitTask,
 };

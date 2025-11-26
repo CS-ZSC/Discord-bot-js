@@ -85,4 +85,5 @@ const doneTask = async (message) => {
 
 module.exports = {
     doneTask,
+    calculateTaskPoints,
 }

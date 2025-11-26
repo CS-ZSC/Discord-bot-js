@@ -99,7 +99,7 @@ module.exports = {
     slash: true,
     callback: async ({ interaction, args }) => {
 
-        console.log(`[command/schedule] args: ${args}`);
+        console.log(`[Command/Scheduler] Args: ${args}, User: ${interaction.user.username}`);
         try {
             // Send an initial response or defer the reply
             await interaction.deferReply({ ephemeral: true });
@@ -115,14 +115,17 @@ module.exports = {
             const date = new Date(nowDate.getFullYear(), month - 1, day, hour || 0, minute || 0, 0, 0);
 
             if (date < nowDate) {
+                console.warn(`[Command/Scheduler] Invalid date provided: ${date}`);
                 await interaction.editReply({
                     content: `Please enter a valid date`,
                 });
                 return;
             }
 
+            console.log(`[Command/Scheduler] Scheduling job for ${date}`);
             // Set the time at which the deadline will be announced
             const job = schedule.scheduleJob(date, async () => {
+                console.log(`[Command/Scheduler] Executing scheduled job for ${date}`);
                 await deadline.callback({
                     interaction: interaction,
                     args: deadlineArgs,
@@ -134,7 +137,7 @@ module.exports = {
                 content: `scheduled task for ${date}`,
             });
         } catch (error) {
-            console.error(error);
+            console.error(`[Command/Scheduler] Error: ${error}`);
             // Handle errors appropriately
             await interaction.followUp({
                 content: `There was an error while executing this command!`,

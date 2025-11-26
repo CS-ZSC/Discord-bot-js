@@ -6,7 +6,7 @@ const {userDoneTask} = require("../sheets");
 
 module.exports = {
   async alreadyDone(track, author, taskNumber) {
-      console.log("Checking if user already done task");
+      console.log(`[AlreadyDone] Checking track: ${track}, user: ${author.username}, task: ${taskNumber}`);
       return userDoneTask(taskNumber, author, track);
 }
 }

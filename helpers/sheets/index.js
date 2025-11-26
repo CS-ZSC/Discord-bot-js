@@ -21,9 +21,10 @@ const connect = async () => {
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID, jwt);
 
     await doc.loadInfo(); // loads document properties and worksheets
+    console.log(`[Sheets] Connected to ${doc.title}`);
     return doc;
   } catch (err) {
-    console.error(`Couldn't connect to Google Spreadsheet: ${err.toString()}`)
+    console.error(`[Sheets] Couldn't connect to Google Spreadsheet: ${err.toString()}`)
   }
 };
 
@@ -34,10 +35,11 @@ const connect = async () => {
  */
 const getSheet = async (sheetName) => {
   try {
+    console.log(`[Sheets] Getting sheet: ${sheetName}`);
     const doc = await connect();
     return doc.sheetsByTitle[sheetName];
   } catch (err) {
-    console.error(`Couldn't get the sheet: ${err.toString()}`)
+    console.error(`[Sheets] Couldn't get the sheet '${sheetName}': ${err.toString()}`)
   }
 };
 
@@ -59,10 +61,12 @@ const searchRows = (rows, columnName, searchValue) => {
  * @returns {object} The user row
  */
 const getUser = async (track, username) => {
+  console.log(`[Sheets] Getting user ${username} in track ${track}`);
   const sheet = await getSheet(track);
   const rows = await sheet.getRows();
   const res = rows.find((row) => row._rawData[2] === username);
   if (!res) {
+    console.warn(`[Sheets] User ${username} not found in ${track}`);
     throw new Error("Couldn't find the user in the spreadsheet")
     return -1;
   }
@@ -79,6 +83,7 @@ const getUser = async (track, username) => {
 
 const getTask = async (track, task) => {
   try {
+    console.log(`[Sheets] Getting task ${task} for track ${track}`);
 
     const sheet = await getSheet(`${track}_DL`);
     const task_row = task;
@@ -94,6 +99,7 @@ const getTask = async (track, task) => {
     const endDate = sheet.getCell(task_row, task_col + 2).value;
 
     if (endDate == null || startDate == null || taskCell == null) {
+      console.warn(`[Sheets] Task ${task} in ${track} has missing data`);
       throw new Error(`This task doesn't exist yet`);
     }
 
@@ -104,12 +110,13 @@ const getTask = async (track, task) => {
       endingDate: endDate,
     };
   } catch (err) {
-    console.error(`Couldn't get the task: ${err.toString()}`)
+    console.error(`[Sheets] Couldn't get the task ${task} in ${track}: ${err.toString()}`)
   }
 };
 
 const insertTaskDone = async (track, author, taskNumber, dateStr) => {
   try {
+    console.log(`[Sheets] Inserting task done: ${track}, User: ${author.username}, Task: ${taskNumber}, Date: ${dateStr}`);
     const userRow = await getUser(track, author.username);
 
     if (userRow === -1 || userRow === '') {
@@ -118,9 +125,10 @@ const insertTaskDone = async (track, author, taskNumber, dateStr) => {
 
     userRow.set(`Task_${taskNumber}`, `Done ${dateStr}`)
     await userRow.save()
+    console.log(`[Sheets] Task ${taskNumber} marked as done for ${author.username}`);
     return true;
   } catch (err) {
-    console.error(`[Marking the user as having done the task]: ${err}`);
+    console.error(`[Sheets] Error marking user ${author.username} done task ${taskNumber}: ${err}`);
   }
 };
 
@@ -131,7 +139,7 @@ const insertTaskDone = async (track, author, taskNumber, dateStr) => {
  * @param {string} track - The track of the user
  */
 const userDoneTask = async (taskNumber, author, track) => {
-  console.log(`Checking user done for:`, author);
+  console.log(`[Sheets] Checking if user ${author.username} done task ${taskNumber} in ${track}`);
   try {
     const userRow = await getUser(track, author.username);
 
@@ -140,9 +148,11 @@ const userDoneTask = async (taskNumber, author, track) => {
       throw new Error("Couldn't find the author in the spreadsheet")
     }
 
-    return userRow.get(`Task_${taskNumber}`) !== undefined;
+    const isDone = userRow.get(`Task_${taskNumber}`) !== undefined;
+    console.log(`[Sheets] User ${author.username} done task ${taskNumber}? ${isDone}`);
+    return isDone;
   } catch (err) {
-    console.error(`[Checking the user has done the task]: ${err}`);
+    console.error(`[Sheets] Error checking user done task: ${err}`);
   }
 };
 
@@ -154,7 +164,7 @@ const userDoneTask = async (taskNumber, author, track) => {
  */
 const getTaskFeedback = async (track, username, taskNumber) => {
   const sheet = await getSheet(`${track}_FB`);
-  console.debug(`Getting feedback for: "${username}"\n track: ${track}\n taskNumber: ${taskNumber}`);
+  console.debug(`[Sheets] Getting feedback for: "${username}"\n track: ${track}\n taskNumber: ${taskNumber}`);
   try {
     await getTask(track, taskNumber);
   } catch (e) {
@@ -162,7 +172,7 @@ const getTaskFeedback = async (track, username, taskNumber) => {
   }
 
   let is_user_done = await userDoneTask(taskNumber, { username }, track);
-  console.log("is_user_done? ", is_user_done);
+  console.log("[Sheets] is_user_done? ", is_user_done);
 
   if (!is_user_done) {
     throw new Error(`You didn't finish this task yet`);
@@ -192,7 +202,7 @@ const getTaskFeedback = async (track, username, taskNumber) => {
   
     return feedback;
   } catch (e) {
-    console.error(`Couldn't load cells Internal Error: ${e}`, { taskRow, taskCol });
+    console.error(`[Sheets] Couldn't load cells Internal Error: ${e}`, { taskRow, taskCol });
     return
   }
 
@@ -200,17 +210,19 @@ const getTaskFeedback = async (track, username, taskNumber) => {
 
 const submitTask = async (track, author, taskNumber, dateStr, url) => {
   try {
+    console.log(`[Sheets] Submitting task: ${track}, User: ${author.username}, Task: ${taskNumber}, URL: ${url}`);
     const userRow = await getUser(track, author.username);
 
     if (userRow === -1 || userRow === '') {
       throw new Error("Couldn't find the author in the spreadsheet");
     }
 
-    userRow.set(`Task_${taskNumber}`, `${url} - ${dateStr}`)
+    userRow.set(`Task_${taskNumber}`, `${url}`)
     await userRow.save()
+    console.log(`[Sheets] Task ${taskNumber} submitted for ${author.username}`);
     return true;
   } catch (err) {
-    console.error(`[Submitting the user task]: ${err}`);
+    console.error(`[Sheets] Error submitting user task: ${err}`);
     throw err;
   }
 };

@@ -53,7 +53,10 @@ const doneTask = async (message) => {
     console.log(`[DoneTask] Track identified: ${track}`);
 
     const author = message.author;
-    const dateStr = generateDateString(new Date(message.createdTimestamp));
+    const date = new Date(message.createdTimestamp);
+    // Convert to Cairo time (handles DST automatically)
+    const localDate = new Date(date.toLocaleString("en-US", { timeZone: "Africa/Cairo" }));
+    const dateStr = generateDateString(localDate);
 
     //Check if the task exists
     try {

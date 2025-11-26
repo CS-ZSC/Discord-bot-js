@@ -109,8 +109,11 @@ module.exports = {
 
         // Initializing start and end date
         const date = new Date();
-        let startingDate = times.strDayFirstSecond(date);
-        let endingDate = times.strDayLastSecond(date, duration);
+        // Convert to Cairo time (handles DST automatically)
+        const localDate = new Date(date.toLocaleString("en-US", { timeZone: "Africa/Cairo" }));
+        
+        let startingDate = times.strDayFirstSecond(localDate);
+        let endingDate = times.strDayLastSecond(localDate, duration);
         
         let trackcol = -1;
         try {

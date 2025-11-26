@@ -53,7 +53,10 @@ module.exports = {
             }
             console.log(`[Command/Submit] Track: ${track}`);
 
-            const dateStr = generateDateString(new Date(interaction.createdTimestamp));
+            const date = new Date(interaction.createdTimestamp);
+            // Convert to Cairo time (handles DST automatically)
+            const localDate = new Date(date.toLocaleString("en-US", { timeZone: "Africa/Cairo" }));
+            const dateStr = generateDateString(localDate);
 
             let taskDetails;
             try {

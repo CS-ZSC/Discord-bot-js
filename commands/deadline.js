@@ -91,6 +91,7 @@ module.exports = {
                 ephemeral: true,
             });
         }
+        
         if (!interaction.replied) {
             interaction.reply({
                 content: "Working on it",

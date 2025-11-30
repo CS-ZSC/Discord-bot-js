@@ -1,6 +1,7 @@
 {
   "name": "cs-bot",
   "version": "1.0.0",
+  "license": "MIT",
   "description": "A bot for the CS Discord Server",
   "main": "main.js",
   "scripts": {
@@ -8,7 +9,8 @@
     "dev": "nodemon main.js",
     "encrypt": "node encrypt.js",
     "gen-config": "node ./scripts/gen-config.js",
-    "call-team": "node ./scripts/call-team.js"
+    "call-team": "node ./scripts/call-team.js",
+    "give-roles": "node ./scripts/give-roles.js"
   },
   "dependencies": {
     "canvacord": "^5.2.3",
@@ -18,6 +20,7 @@
     "gh": "^2.8.9",
     "google-auth-library": "^9.15.0",
     "google-spreadsheet": "^4.1.4",
+    "log-timestamp": "^0.3.0",
     "mongoose": "^6.2.4",
     "node-schedule": "^2.1.1",
     "wokcommands": "^1.5.3"

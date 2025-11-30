@@ -9,7 +9,7 @@ module.exports = {
     category: "Points",
     description: "Get your points",
     callback: async ({ interaction, user }) => {
-        console.log(`[command/points] user: ${user}`);
+        console.log(`[Command/Points] User: ${user.username}`);
         interaction.reply({
             content: "Working on it", ephemeral: true,
         });
@@ -25,14 +25,15 @@ module.exports = {
                         files: [{ attachment: buffer }],
                         ephemeral: true,
                     });
+                    console.log(`[Command/Points] Rank card sent to ${user.username}`);
                 } else {
-                    console.log("Failed to generate rank image: Buffer is empty.");
+                    console.error("[Command/Points] Failed to generate rank image: Buffer is empty.");
                 }
             } else {
-                console.log("Rank object is invalid or missing a 'build' method.");
+                console.error("[Command/Points] Rank object is invalid or missing a 'build' method.");
             }
         } catch (error) {
-            console.error("An error occurred:", error);
+            console.error("[Command/Points] An error occurred:", error);
         }
     }
 

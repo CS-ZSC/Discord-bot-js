@@ -5,6 +5,7 @@ module.exports = {
   execute(message) {
     if (message.author.bot) return;
     if (message.content.toLowerCase() !== "done"  ) return;
+    console.log(`[Event/MessageCreate] 'done' detected from ${message.author.username} in ${message.channel.id}`);
     doneTask.doneTask(message);
   },
 };

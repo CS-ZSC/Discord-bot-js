@@ -56,6 +56,14 @@ module.exports = {
                 {
                     name: "Cyber Security",
                     value: "cyber_security"
+                },
+                {
+                    name: "Cyber Security (Blue Team)",
+                    value: "cyber_security_blue_team"
+                },
+                {
+                    name: "Cyber Security (Red Team)",
+                    value: "cyber_security_red_team"
                 }
             ],
         },
@@ -74,8 +82,7 @@ module.exports = {
     ],
     slash: true,
     callback: async ({ interaction, args }) => {
-        console.log(`[command/deadline] args: ${args}`);
-
+        console.log(`[Command/Deadline] Args: ${args}, User: ${interaction.user.username}`);
 
         const member = interaction.member;
         if (!member?.permissions.has("ADMINISTRATOR")) {
@@ -99,11 +106,15 @@ module.exports = {
         const track = args[0];
         const duration = args[1];
         const task = args[2];
+        console.log(`[Command/Deadline] Track: ${track}, Duration: ${duration}, Task: ${task}`);
 
         // Initializing start and end date
         const date = new Date();
-        let startingDate = times.strDayFirstSecond(date);
-        let endingDate = times.strDayLastSecond(date, duration);
+        // Convert to Cairo time (handles DST automatically)
+        const localDate = new Date(date.toLocaleString("en-US", { timeZone: "Africa/Cairo" }));
+        
+        let startingDate = times.strDayFirstSecond(localDate);
+        let endingDate = times.strDayLastSecond(localDate, duration);
         
         let trackcol = -1;
         try {
@@ -111,7 +122,7 @@ module.exports = {
             let sheet = await getSheet(`tasks`);
 
             // WARNING: if you wan to increase the number of tracks, you should increase the number of columns that be checked here.
-            for (let col = 0; col < 10; col++) {
+            for (let col = 0; col < 20; col++) {
                 await sheet.loadCells({
                     startRowIndex: 0,
                     endRowIndex: 1,
@@ -125,12 +136,14 @@ module.exports = {
                 }
             }
             if (trackcol === -1) {
+                console.warn(`[Command/Deadline] Track '${track}' not found in sheet headers`);
                 console.log("Track not found");
                 interaction.editReply({
                     content: `Track not found`,
                 });
                 return;
             }
+            console.log(`[Command/Deadline] Track column found at index ${trackcol}`);
             await sheet.loadCells({
                 startRowIndex: task,
                 endRowIndex: task + 1,
@@ -142,6 +155,7 @@ module.exports = {
             const doneChannelId = await config.tasksChannels[track];
             const doneChannel = await client.channels.fetch(doneChannelId);
             if (content === null || content === undefined || content === '') {
+                console.warn(`[Command/Deadline] Task content empty for task ${task} in track ${track}`);
                 interaction.editReply({ content: "please put your task in the designated area " });
                 return;
             }
@@ -154,6 +168,7 @@ module.exports = {
                 content: `**Deadline:** ${endingDate}\n\n **Instruction:** After finishing your task, you should write \`Done\` in <#${config.finishTaskChannel[track]}>  \n${content}`
             });
         } catch (e) {
+            console.error(`[Command/Deadline] Error processing task sheet: ${e}`);
             console.log("Error updating the sheet", e);
             interaction.editReply({
                 content: `Error updating the sheet, Mention a bot admin`,
@@ -193,7 +208,9 @@ module.exports = {
 
             // Commit the changes
             await sheet.saveUpdatedCells();
+            console.log(`[Command/Deadline] Sheet updated successfully for task ${task}`);
         } catch (e) {
+            console.error(`[Command/Deadline] Error updating deadline sheet: ${e}`);
             console.log("Error updating the sheet", e);
             interaction.editReply({
                 content: `Error updating the sheet, Mention a bot admin`,

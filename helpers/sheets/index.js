@@ -54,6 +54,9 @@ const searchRows = (rows, columnName, searchValue) => {
   return rows.filter((row) => row[columnName]?.toLowerCase() === searchValue.toLowerCase());
 };
 
+// Helper to check if a value is empty (undefined, null, or empty string)
+const isEmpty = (val) => val === undefined || val === null || val === '';
+
 /**
  * Gets the user row by Discord Tag
  * @param {string} track
@@ -98,7 +101,7 @@ const getTask = async (track, task) => {
     const startDate = sheet.getCell(task_row, task_col + 1).value;
     const endDate = sheet.getCell(task_row, task_col + 2).value;
 
-    if (endDate == null || startDate == null || taskCell == null) {
+    if (isEmpty(endDate) || isEmpty(startDate) || isEmpty(taskCell)) {
       console.warn(`[Sheets] Task ${task} in ${track} has missing data`);
       throw new Error(`This task doesn't exist yet`);
     }
@@ -169,8 +172,9 @@ const userDoneTask = async (taskNumber, author, track) => {
       throw new Error("Couldn't find the author in the spreadsheet")
     }
 
-    const isDone = [undefined, null, ""].includes(userRow.get(`Task_${taskNumber}`));
-    console.log(`[Sheets] Task_${taskNumber} value for user ${author.username}: ${userRow.get(`Task_${taskNumber}`)}`);
+    const cellValue = userRow.get(`Task_${taskNumber}`);
+    const isDone = !isEmpty(cellValue);
+    console.log(`[Sheets] Task_${taskNumber} value for user ${author.username}: ${cellValue}`);
     console.log(`[Sheets] User ${author.username} done task ${taskNumber}? ${isDone}`);
     return isDone;
   } catch (err) {
@@ -218,7 +222,7 @@ const getTaskFeedback = async (track, username, taskNumber) => {
     });
     const feedback = sheet.getCell(taskRow - 1, taskCol).value;
   
-    if (!feedback) {
+    if (isEmpty(feedback)) {
       throw new Error(`Looks like your feedback for task ${taskNumber} is not ready yet`);
     }
   

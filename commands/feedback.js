@@ -1,4 +1,5 @@
 const { getTaskFeedback } = require("../helpers/sheets");
+const config = require("../config.json");
 
 module.exports = {
     name: "feedback",
@@ -11,52 +12,10 @@ module.exports = {
             description: "Choose the track of your feedback",
             required: true,
             type: 3,
-            choices: [
-                {
-                    name: "Frontend",
-                    value: "frontend",
-                },
-                {
-                    name: "Backend",
-                    value: "backend",
-                },
-                {
-                    name: "Mobile",
-                    value: "mobile",
-                },
-                {
-                    name: "Advanced AI",
-                    value: "advanced_ai",
-                },
-                {
-                    name: "Basic AI",
-                    value: "basic_ai",
-                },
-                {
-                    name: "Science",
-                    value: "science",
-                },
-                {
-                    name: "Rookies",
-                    value: "rookies",
-                },
-                {
-                    name: "Game Development",
-                    value: "game_development"
-                },
-                {
-                    name: "Cyber Security",
-                    value: "cyber_security"
-                },
-                {
-                    name: "Cyber Security (Blue Team)",
-                    value: "cyber_security_blue_team"
-                },
-                {
-                    name: "Cyber Security (Red Team)",
-                    value: "cyber_security_red_team"
-                }
-            ],
+            choices: Object.keys(config.finishTaskChannel).map(key => ({
+                name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                value: key
+            })),
         },
         {
             name: "task_number",

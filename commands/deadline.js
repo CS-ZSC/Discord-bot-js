@@ -19,53 +19,10 @@ module.exports = {
             description: "Choose the track which you want to create a deadline",
             required: true,
             type: 3,
-            choices: [
-                {
-                    name: "Frontend",
-                    value: "frontend",
-                },
-                {
-                    name: "Backend",
-                    value: "backend",
-                },
-                {
-                    name: "Mobile",
-                    value: "mobile",
-                },
-                {
-                    name: "Advanced AI",
-                    value: "advanced_ai",
-                },
-                {
-                    name: "Basic AI",
-                    value: "basic_ai",
-                },
-
-                {
-                    name: "Science",
-                    value: "science",
-                },
-                {
-                    name: "Rookies",
-                    value: "rookies",
-                },
-                {
-                    name: "Game Development",
-                    value: "game_development"
-                },
-                {
-                    name: "Cyber Security",
-                    value: "cyber_security"
-                },
-                {
-                    name: "Cyber Security (Blue Team)",
-                    value: "cyber_security_blue_team"
-                },
-                {
-                    name: "Cyber Security (Red Team)",
-                    value: "cyber_security_red_team"
-                }
-            ],
+            choices: Object.keys(config.finishTaskChannel).map(key => ({
+                name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                value: key
+            })),
         },
         {
             name: "duration",
@@ -79,6 +36,16 @@ module.exports = {
             required: true,
             type: 3,
         },
+        {
+            name: "submission_type",
+            description: "How should members submit the task?",
+            required: true,
+            type: 3,
+            choices: [
+                { name: "Type 'Done'", value: "done" },
+                { name: "Submit Link (/submit)", value: "submit" }
+            ]
+        }
     ],
     slash: true,
     callback: async ({ interaction, args }) => {
@@ -105,7 +72,8 @@ module.exports = {
         const track = args[0];
         const duration = args[1];
         const task = args[2];
-        console.log(`[Command/Deadline] Track: ${track}, Duration: ${duration}, Task: ${task}`);
+        const submissionType = args[3];
+        console.log(`[Command/Deadline] Track: ${track}, Duration: ${duration}, Task: ${task}, Type: ${submissionType}`);
 
         // Initializing start and end date
         const date = new Date();
@@ -163,8 +131,16 @@ module.exports = {
                 autoArchiveDuration: 60,
                 reason: 'Tread for task',
             });
+
+            let instructionText = "";
+            if (submissionType === 'submit') {
+                instructionText = `**Instruction:** After finishing your task, please use the \`/submit <url>\` command in <#${config.finishTaskChannel[track]}> to submit your work.`;
+            } else {
+                instructionText = `**Instruction:** After finishing your task, you should write \`Done\` in <#${config.finishTaskChannel[track]}>`;
+            }
+
             await thread.send({
-                content: `**Deadline:** ${endingDate}\n\n **Instruction:** After finishing your task, you should write \`Done\` in <#${config.finishTaskChannel[track]}>  \n${content}`
+                content: `**Deadline:** ${endingDate}\n\n ${instructionText}  \n${content}`
             });
         } catch (e) {
             console.error(`[Command/Deadline] Error processing task sheet: ${e}`);
@@ -181,9 +157,12 @@ module.exports = {
             autoArchiveDuration: 60,
             reason: 'Tread for task',
         });
-        await thread.send({ content: `After you finish the task, please write done in this thread` });
 
-
+        if (submissionType === 'submit') {
+            await thread.send({ content: `After you finish the task, please use the \`/submit <url>\` command in this thread.` });
+        } else {
+            await thread.send({ content: `After you finish the task, please write done in this thread` });
+        }
 
         try {
             // Get the sheet and load Its cells

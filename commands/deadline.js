@@ -34,16 +34,6 @@ module.exports = {
             description: "Please enter the task number",
             required: true,
             type: 3,
-        },
-        {
-            name: "submission_type",
-            description: "How should members submit the task?",
-            required: true,
-            type: 3,
-            choices: [
-                { name: "Type 'Done'", value: "done" },
-                { name: "Submit Link (/submit)", value: "submit" }
-            ]
         }
     ],
     slash: true,
@@ -73,8 +63,7 @@ module.exports = {
         const track = args[0];
         const duration = args[1];
         const task = args[2];
-        const submissionType = args[3];
-        console.log(`[Command/Deadline] Track: ${track}, Duration: ${duration}, Task: ${task}, Type: ${submissionType}`);
+        console.log(`[Command/Deadline] Track: ${track}, Duration: ${duration}, Task: ${task}`);
 
         // Initializing start and end date
         const date = new Date();
@@ -133,12 +122,7 @@ module.exports = {
                 reason: 'Tread for task',
             });
 
-            let instructionText = "";
-            if (submissionType === 'submit') {
-                instructionText = `**Instruction:** After finishing your task, please use the \`/submit <url>\` command in <#${config.finishTaskChannel[track]}> to submit your work.\n**Example:**\n\`\`\`\n/submit https://github.com/your-repo\`\`\``;
-            } else {
-                instructionText = `**Instruction:** After finishing your task, you should write \`Done\` in <#${config.finishTaskChannel[track]}>`;
-            }
+            let instructionText = `**Instruction:** After finishing your task, please use the \`/submit <url>\` command in <#${config.finishTaskChannel[track]}> to submit your work.\n**Example:**\n\`\`\`\n/submit https://github.com/your-repo\`\`\``;
 
             await thread.send({
                 content: `**Deadline:** ${endingDate}\n\n ${instructionText}  \n${content}`
@@ -159,12 +143,7 @@ module.exports = {
             reason: 'Tread for task',
         });
 
-        if (submissionType === 'submit') {
-            await thread.send({ content: `After you finish the task, please use the \`/submit <url>\` command in this thread.\n**Example:**\n\`\`\`\n/submit https://github.com/your-repo\n\`\`\`` });
-        } else {
-            await thread.send({ content: `After you finish the task, please write done in this thread` });
-        }
-
+        await thread.send({ content: `After you finish the task, please use the \`/submit <url>\` command in this thread.\n**Example:**\n\`\`\`\n/submit https://github.com/your-repo\n\`\`\`` });
         try {
             // Get the sheet and load Its cells
             let sheet = await getSheet(`${track}_DL`);

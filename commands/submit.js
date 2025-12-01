@@ -75,7 +75,7 @@ module.exports = {
             const lateMessage = isLate ? "\n**(Late Submission ⚠️)**" : "";
 
             // If it's a late resubmission, do not update the sheet
-            if (isResubmission && !isLate) {
+            if (isResubmission && isLate) {
                 console.log(`[Command/Submit] Late resubmission for ${author.username}. Sheet not updated.`);
                 await interaction.editReply(`Task ${taskNumber} resubmission is **late**. You cannot resubmit the task after deadline: \`${taskDetails.endingDate}\`.`);
                 return;

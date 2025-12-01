@@ -169,7 +169,7 @@ const userDoneTask = async (taskNumber, author, track) => {
       throw new Error("Couldn't find the author in the spreadsheet")
     }
 
-    const isDone = ![undefined, null, ""].includes(userRow.get(`Task_${taskNumber}`));
+    const isDone = [undefined, null, ""].includes(userRow.get(`Task_${taskNumber}`));
     console.log(`[Sheets] Task_${taskNumber} value for user ${author.username}: ${userRow.get(`Task_${taskNumber}`)}`);
     console.log(`[Sheets] User ${author.username} done task ${taskNumber}? ${isDone}`);
     return isDone;

@@ -135,7 +135,7 @@ module.exports = {
 
             let instructionText = "";
             if (submissionType === 'submit') {
-                instructionText = `**Instruction:** After finishing your task, please use the \`/submit <url>\` command in <#${config.finishTaskChannel[track]}> to submit your work.\n**Example:**\n \`\`\` \n/submit https://github.com/your-repo\`\`\``;
+                instructionText = `**Instruction:** After finishing your task, please use the \`/submit <url>\` command in <#${config.finishTaskChannel[track]}> to submit your work.\n**Example:**\n\`\`\`\n/submit https://github.com/your-repo\`\`\``;
             } else {
                 instructionText = `**Instruction:** After finishing your task, you should write \`Done\` in <#${config.finishTaskChannel[track]}>`;
             }
@@ -160,7 +160,7 @@ module.exports = {
         });
 
         if (submissionType === 'submit') {
-            await thread.send({ content: `After you finish the task, please use the \`/submit <url>\` command in this thread.\n**Example:**\n \`\`\`\n/submit https://github.com/your-repo\n\`\`\`\`` });
+            await thread.send({ content: `After you finish the task, please use the \`/submit <url>\` command in this thread.\n**Example:**\n\`\`\`\n/submit https://github.com/your-repo\n\`\`\`` });
         } else {
             await thread.send({ content: `After you finish the task, please write done in this thread` });
         }

@@ -1,7 +1,6 @@
 const { getLeaderboard } = require("../helpers/getLeaderboard");
 const card = require("../helpers/levelCard");
 const leaderboard = require("../helpers/levelCard");
-const { client } = require("../main");
 const config = require('../config.json');
 
 module.exports = {
@@ -10,6 +9,7 @@ module.exports = {
   slash: true,
   category: "Leaderboard",
   callback: async (interaction) => {
+    const client = interaction.client;
     console.log(`[Command/Leaderboard] Running. Interaction type: ${typeof interaction === 'string' ? interaction : 'Object'}`);
     if (interaction !== "Bot fired") {
       console.log("interaction fired");

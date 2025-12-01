@@ -5,7 +5,6 @@ const { getSheet } = require("../helpers/sheets/index");
 const { getMembers } = require("../helpers/getTrackMembers/index");
 const announce = require("../helpers/announce");
 const config = require("../config.json");
-const { client } = require("../main");
 const { Interaction } = require("discord.js");
 
 module.exports = {
@@ -49,6 +48,7 @@ module.exports = {
     ],
     slash: true,
     callback: async ({ interaction, args }) => {
+        const client = interaction.client;
         console.log(`[Command/Deadline] Args: ${args}, User: ${interaction.user.username}`);
 
         const member = interaction.member;

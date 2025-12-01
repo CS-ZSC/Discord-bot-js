@@ -239,7 +239,7 @@ const submitTask = async (track, author, taskNumber, dateStr, url, isLate = fals
       throw new Error("Couldn't find the author in the spreadsheet");
     }
 
-    userRow.set(`Task_${taskNumber}`, `${url}\n${dateStr}`)
+    userRow.set(`Task_${taskNumber}`, `${url}`)
     await userRow.save()
 
     if (isLate) {

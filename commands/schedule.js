@@ -112,7 +112,29 @@ module.exports = {
 
             // Calculate the duration
             const nowDate = new Date();
-            const date = new Date(nowDate.getFullYear(), month - 1, day, hour || 0, minute || 0, 0, 0);
+            
+            // Construct the target date assuming inputs are UTC first
+            const targetTimeUTC = new Date(Date.UTC(nowDate.getFullYear(), month - 1, day, hour || 0, minute || 0, 0, 0));
+
+            // Calculate Cairo offset dynamically
+            const cairoTimeString = targetTimeUTC.toLocaleString("en-US", { timeZone: "Africa/Cairo" });
+            const cairoDateLocal = new Date(cairoTimeString);
+            
+            // Convert the local face values to UTC timestamp to calculate the shift
+            const cairoDateUTC = new Date(Date.UTC(
+                cairoDateLocal.getFullYear(),
+                cairoDateLocal.getMonth(),
+                cairoDateLocal.getDate(),
+                cairoDateLocal.getHours(),
+                cairoDateLocal.getMinutes(),
+                cairoDateLocal.getSeconds()
+            ));
+
+            // Offset = Cairo Time - UTC Time
+            const offset = cairoDateUTC.getTime() - targetTimeUTC.getTime();
+
+            // Adjust target time: we want the moment when Cairo Time equals the Input Time.
+            const date = new Date(targetTimeUTC.getTime() - offset);
 
             if (date < nowDate) {
                 console.warn(`[Command/Scheduler] Invalid date provided: ${date}`);

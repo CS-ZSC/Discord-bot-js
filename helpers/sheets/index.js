@@ -114,9 +114,9 @@ const getTask = async (track, task) => {
   }
 };
 
-const insertTaskDone = async (track, author, taskNumber, dateStr) => {
+const insertTaskDone = async (track, author, taskNumber, dateStr, isLate = false) => {
   try {
-    console.log(`[Sheets] Inserting task done: ${track}, User: ${author.username}, Task: ${taskNumber}, Date: ${dateStr}`);
+    console.log(`[Sheets] Inserting task done: ${track}, User: ${author.username}, Task: ${taskNumber}, Date: ${dateStr}, Late: ${isLate}`);
     const userRow = await getUser(track, author.username);
 
     if (userRow === -1 || userRow === '') {
@@ -125,6 +125,27 @@ const insertTaskDone = async (track, author, taskNumber, dateStr) => {
 
     userRow.set(`Task_${taskNumber}`, `Done ${dateStr}`)
     await userRow.save()
+
+    if (isLate) {
+      const sheet = userRow._worksheet;
+      await sheet.loadHeaderRow();
+      const headers = sheet.headerValues;
+      const columnIndex = headers.indexOf(`Task_${taskNumber}`);
+
+      if (columnIndex !== -1) {
+        const rowIndex = userRow.rowIndex - 1; // 0-based index
+        await sheet.loadCells({
+          startRowIndex: rowIndex,
+          endRowIndex: rowIndex + 1,
+          startColumnIndex: columnIndex,
+          endColumnIndex: columnIndex + 1
+        });
+        const cell = sheet.getCell(rowIndex, columnIndex);
+        cell.backgroundColor = { red: 1, green: 0.8, blue: 0.8 }; // Light red background
+        await sheet.saveUpdatedCells();
+      }
+    }
+
     console.log(`[Sheets] Task ${taskNumber} marked as done for ${author.username}`);
     return true;
   } catch (err) {
@@ -209,17 +230,38 @@ const getTaskFeedback = async (track, username, taskNumber) => {
 
 };
 
-const submitTask = async (track, author, taskNumber, dateStr, url) => {
+const submitTask = async (track, author, taskNumber, dateStr, url, isLate = false) => {
   try {
-    console.log(`[Sheets] Submitting task: ${track}, User: ${author.username}, Task: ${taskNumber}, URL: ${url}`);
+    console.log(`[Sheets] Submitting task: ${track}, User: ${author.username}, Task: ${taskNumber}, URL: ${url}, Late: ${isLate}`);
     const userRow = await getUser(track, author.username);
 
     if (userRow === -1 || userRow === '') {
       throw new Error("Couldn't find the author in the spreadsheet");
     }
 
-    userRow.set(`Task_${taskNumber}`, `${url}`)
+    userRow.set(`Task_${taskNumber}`, `${url}\n${dateStr}`)
     await userRow.save()
+
+    if (isLate) {
+      const sheet = userRow._worksheet;
+      await sheet.loadHeaderRow();
+      const headers = sheet.headerValues;
+      const columnIndex = headers.indexOf(`Task_${taskNumber}`);
+
+      if (columnIndex !== -1) {
+        const rowIndex = userRow.rowIndex - 1; // 0-based index
+        await sheet.loadCells({
+          startRowIndex: rowIndex,
+          endRowIndex: rowIndex + 1,
+          startColumnIndex: columnIndex,
+          endColumnIndex: columnIndex + 1
+        });
+        const cell = sheet.getCell(rowIndex, columnIndex);
+        cell.backgroundColor = { red: 1, green: 0.8, blue: 0.8 }; // Light red background
+        await sheet.saveUpdatedCells();
+      }
+    }
+
     console.log(`[Sheets] Task ${taskNumber} submitted for ${author.username}`);
     return true;
   } catch (err) {

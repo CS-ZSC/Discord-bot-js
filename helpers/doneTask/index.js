@@ -1,6 +1,6 @@
 const { generateDateString } = require("../time/handlers");
 const { getTask, insertTaskDone } = require('../sheets/index');
-const config = require('../../config.json');
+const config = require('../config'); // Updated to use dynamic config
 const addPointsTo = require("../addPoints/index");
 const { getParentChannel } = require("../getParentChannel");
 const { client } = require("../../main");
@@ -83,12 +83,26 @@ const doneTask = async (message) => {
         setTimeout(() => message.delete(), 5000);
         return;
     }
-    if (await insertTaskDone(track, author, taskNumber, dateStr)) {
-        const taskPoints = calculateTaskPoints(new Date(taskDetails.startingDate), new Date(taskDetails.endingDate), new Date(dateStr));
+
+    const submitDate = localDate;
+    const endDate = new Date(taskDetails.endingDate);
+    const isLate = submitDate > endDate;
+    const lateMessage = isLate ? "\n**(Late Submission ⚠️)**" : "";
+    const sheetDateStr = isLate ? `${dateStr} (Late Submission)` : dateStr;
+
+    if (await insertTaskDone(track, author, taskNumber, sheetDateStr, isLate)) {
+        const taskPoints = calculateTaskPoints(new Date(taskDetails.startingDate), endDate, submitDate);
         console.log(`[DoneTask] Points calculated: ${taskPoints}`);
         await addPointsTo.addPointsTo(author, taskPoints);
         console.log(`[DoneTask] Added ${taskPoints} to ${author}`)
-        await message.react("❤️");
+        
+        await message.channel.send(`${author} has submitted **Task ${taskNumber}** at \`${dateStr}\` and earned **${taskPoints}** points!${lateMessage}`);
+        
+        try {
+            await message.delete();
+        } catch (e) {
+            console.error(`[DoneTask] Failed to delete message: ${e}`);
+        }
     }
 };
 

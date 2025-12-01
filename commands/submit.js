@@ -83,7 +83,7 @@ module.exports = {
 
             // If it's a late submission (first time), mark it in the sheet
             const sheetDateStr = isLate ? `${dateStr} (Late Submission)` : dateStr;
-            await submitTask(track, author, taskNumber, sheetDateStr, url);
+            await submitTask(track, author, taskNumber, sheetDateStr, url, isLate);
 
             if (isResubmission) {
                 console.log(`[Command/Submit] Resubmission successful for ${author.username}`);

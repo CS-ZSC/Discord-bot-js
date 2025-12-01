@@ -243,28 +243,10 @@ const submitTask = async (track, author, taskNumber, dateStr, url, isLate = fals
       throw new Error("Couldn't find the author in the spreadsheet");
     }
 
-    userRow.set(`Task_${taskNumber}`, `${url}`)
+    userRow.set(`Task_${taskNumber}`, isLate ? `**Late Submission**\n${url}` : `${url}`)
     await userRow.save()
 
-    if (isLate) {
-      const sheet = userRow._worksheet;
-      await sheet.loadHeaderRow();
-      const headers = sheet.headerValues;
-      const columnIndex = headers.indexOf(`Task_${taskNumber}`);
-
-      if (columnIndex !== -1) {
-        const rowIndex = userRow.rowIndex - 1; // 0-based index
-        await sheet.loadCells({
-          startRowIndex: rowIndex,
-          endRowIndex: rowIndex + 1,
-          startColumnIndex: columnIndex,
-          endColumnIndex: columnIndex + 1
-        });
-        const cell = sheet.getCell(rowIndex, columnIndex);
-        cell.backgroundColor = { red: 1, green: 0.8, blue: 0.8 }; // Light red background
-        await sheet.saveUpdatedCells();
-      }
-    }
+   
 
     console.log(`[Sheets] Task ${taskNumber} submitted for ${author.username}`);
     return true;

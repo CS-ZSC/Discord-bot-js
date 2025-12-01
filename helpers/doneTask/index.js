@@ -1,6 +1,6 @@
 const { generateDateString } = require("../time/handlers");
 const { getTask, insertTaskDone } = require('../sheets/index');
-const config = require('../config'); // Updated to use dynamic config
+const config = require('../../config.json');
 const addPointsTo = require("../addPoints/index");
 const { getParentChannel } = require("../getParentChannel");
 const { client } = require("../../main");

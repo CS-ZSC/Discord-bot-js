@@ -8,7 +8,7 @@ const { calculateTaskPoints } = require("../helpers/doneTask");
 
 module.exports = {
     name: "submit",
-    description: "Submit your task with a link",
+    description: "Submit your task with a link (e.g. /submit https://github.com/...)",
     category: "Tasks",
     options: [
         {
@@ -95,7 +95,7 @@ module.exports = {
                 const taskPoints = calculateTaskPoints(new Date(taskDetails.startingDate), endDate, submitDate);
                 console.log(`[Command/Submit] Points calculated: ${taskPoints}`);
                 await addPointsTo.addPointsTo(author, taskPoints);
-                
+
                 // Private confirmation
                 await interaction.editReply(`Task ${taskNumber} submitted successfully! You earned **${taskPoints}** points.${lateMessage}`);
                 // Public announcement

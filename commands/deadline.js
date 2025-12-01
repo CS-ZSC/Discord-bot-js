@@ -58,7 +58,7 @@ module.exports = {
                 ephemeral: true,
             });
         }
-        
+
         if (!interaction.replied) {
             interaction.reply({
                 content: "Working on it",
@@ -69,7 +69,7 @@ module.exports = {
                 content: "Working on it",
             });
         }
-        
+
         const track = args[0];
         const duration = args[1];
         const task = args[2];
@@ -80,10 +80,10 @@ module.exports = {
         const date = new Date();
         // Convert to Cairo time (handles DST automatically)
         const localDate = new Date(date.toLocaleString("en-US", { timeZone: "Africa/Cairo" }));
-        
+
         let startingDate = times.strDayFirstSecond(localDate);
         let endingDate = times.strDayLastSecond(localDate, duration);
-        
+
         let trackcol = -1;
         try {
             // Get the sheet and load Its cells
@@ -135,7 +135,7 @@ module.exports = {
 
             let instructionText = "";
             if (submissionType === 'submit') {
-                instructionText = `**Instruction:** After finishing your task, please use the \`/submit <url>\` command in <#${config.finishTaskChannel[track]}> to submit your work.`;
+                instructionText = `**Instruction:** After finishing your task, please use the \`/submit <url>\` command in <#${config.finishTaskChannel[track]}> to submit your work.\n**Example:**\n \`\`\` \n/submit https://github.com/your-repo\`\`\``;
             } else {
                 instructionText = `**Instruction:** After finishing your task, you should write \`Done\` in <#${config.finishTaskChannel[track]}>`;
             }
@@ -160,7 +160,7 @@ module.exports = {
         });
 
         if (submissionType === 'submit') {
-            await thread.send({ content: `After you finish the task, please use the \`/submit <url>\` command in this thread.` });
+            await thread.send({ content: `After you finish the task, please use the \`/submit <url>\` command in this thread.\n**Example:**\n \`\`\`\n/submit https://github.com/your-repo\n\`\`\`\`` });
         } else {
             await thread.send({ content: `After you finish the task, please write done in this thread` });
         }

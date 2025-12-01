@@ -149,6 +149,7 @@ const userDoneTask = async (taskNumber, author, track) => {
     }
 
     const isDone = userRow.get(`Task_${taskNumber}`) !== undefined;
+    console.log(`[Sheets] Task_${taskNumber} value for user ${author.username}: ${userRow.get(`Task_${taskNumber}`)}`);
     console.log(`[Sheets] User ${author.username} done task ${taskNumber}? ${isDone}`);
     return isDone;
   } catch (err) {

@@ -36,16 +36,6 @@ module.exports = {
             description: "Task number",
             required: true,
             type: 3,
-        },
-        {
-            name: "submission_type",
-            description: "How should members submit the task?",
-            required: true,
-            type: 3,
-            choices: [
-                { name: "Type 'Done'", value: "done" },
-                { name: "Submit Link (/submit)", value: "submit" }
-            ]
         }
     ],
     slash: true,
@@ -81,14 +71,14 @@ module.exports = {
 
             // Calculate the duration
             const nowDate = new Date();
-            
+
             // Construct the target date assuming inputs are UTC first
             const targetTimeUTC = new Date(Date.UTC(year, month - 1, day, hour, minute, 0, 0));
 
             // Calculate Cairo offset dynamically
             const cairoTimeString = targetTimeUTC.toLocaleString("en-US", { timeZone: "Africa/Cairo" });
             const cairoDateLocal = new Date(cairoTimeString);
-            
+
             // Convert the local face values to UTC timestamp to calculate the shift
             const cairoDateUTC = new Date(Date.UTC(
                 cairoDateLocal.getFullYear(),
@@ -114,7 +104,7 @@ module.exports = {
             }
 
             console.log(`[Command/Scheduler] Scheduling job for ${date}`);
-            
+
             const deadlineArgs = [track, duration, task, submissionType];
 
             // Set the time at which the deadline will be announced

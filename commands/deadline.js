@@ -14,7 +14,7 @@ module.exports = {
 
     options: [
         {
-            name: "track",
+            name: "track_name",
             description: "Choose the track which you want to create a deadline",
             required: true,
             type: 3,

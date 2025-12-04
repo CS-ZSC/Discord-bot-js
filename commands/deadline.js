@@ -9,7 +9,7 @@ const { Interaction } = require("discord.js");
 
 module.exports = {
     name: "deadline",
-    description: "Make a deadline for specific track", // Required for slash commands
+    description: "Create a deadline for a specific track and send it immediately.", // Required for slash commands
     category: "Deadline",
 
     options: [

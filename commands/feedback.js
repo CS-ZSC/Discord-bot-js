@@ -50,10 +50,10 @@ module.exports = {
                 embeds: [{
                     color: 0x00ff00,
                     title: `📝 Feedback for Task ${taskNumber}`,
-                    description: feedback,
                     fields: [
                         { name: "Track", value: trackName, inline: true },
                         { name: "Task", value: `#${taskNumber}`, inline: true },
+                        { name: "Feedback", value: feedback, inline: true }
                     ],
                     footer: { text: "Keep up the great work! 🚀" },
                     timestamp: new Date().toISOString(),
@@ -65,7 +65,7 @@ module.exports = {
             logger.warn('Command/Feedback', `Feedback retrieval failed`, { username, track, task, reason: errorMessage });
 
             let userMessage = "❌ An error occurred while fetching your feedback.";
-            
+
             if (errorMessage.includes("doesn't exist yet")) {
                 userMessage = `❌ Task ${taskNumber} doesn't exist yet in the **${track.replace(/_/g, ' ')}** track.`;
             } else if (errorMessage.includes("didn't finish this task")) {

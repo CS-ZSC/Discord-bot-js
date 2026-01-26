@@ -190,49 +190,56 @@ const userDoneTask = async (taskNumber, author, track) => {
  * @param {int} taskNumber - The task number
  */
 const getTaskFeedback = async (track, username, taskNumber) => {
+  logger.debug('Sheets', `Getting feedback for: "${username}", track: ${track}, taskNumber: ${taskNumber}`);
+  
   const sheet = await getSheet(`${track}_FB`);
-  console.debug(`[Sheets] Getting feedback for: "${username}"\n track: ${track}\n taskNumber: ${taskNumber}`);
+  
+  if (!sheet) {
+    throw new Error(`Feedback sheet for track '${track}' not found`);
+  }
+
+  // Verify that the task exists
   try {
     await getTask(track, taskNumber);
   } catch (e) {
     throw new Error(e.message);
   }
 
+  // Check if the user has completed the task
   let is_user_done = await userDoneTask(taskNumber, { username }, track);
-  console.log("[Sheets] is_user_done? ", is_user_done);
+  logger.debug('Sheets', `User ${username} done task ${taskNumber}? ${is_user_done}`);
 
   if (!is_user_done) {
     throw new Error(`You didn't finish this task yet`);
   }
 
+  // Get the user row from the feedback sheet
   const rows = await sheet.getRows();
   const userRow = rows.find((row) => row._rawData[2] === username);
 
   if (!userRow) {
-    throw new Error(`Looks like you are not in the ${track} track`);
+    throw new Error(`Looks like you are not in the ${track.replace(/_/g, ' ')} track`);
   }
+  
   try {
-    const taskRow = userRow._rowNumber;
-    const taskCol = parseInt(taskNumber) + 2;
-
-    await sheet.loadCells({
-      startRowIndex: taskRow - 1,
-      endRowIndex: taskRow,
-      startColumnIndex: taskCol,
-      endColumnIndex: taskCol + 1,
-    });
-    const feedback = sheet.getCell(taskRow - 1, taskCol).value;
+    // Get feedback using the Task_N column header (consistent with other functions)
+    const feedbackColumnName = `Task_${taskNumber}`;
+    const feedback = userRow.get(feedbackColumnName);
   
     if (isEmpty(feedback)) {
+      logger.debug('Sheets', `Feedback for task ${taskNumber} is empty for user ${username}`);
       throw new Error(`Looks like your feedback for task ${taskNumber} is not ready yet`);
     }
   
+    logger.debug('Sheets', `Feedback retrieved for ${username}, task ${taskNumber}`);
     return feedback;
   } catch (e) {
-    console.error(`[Sheets] Couldn't load cells Internal Error: ${e}`, { taskRow, taskCol });
-    return
+    if (e.message.includes('not ready yet') || e.message.includes("didn't finish")) {
+      throw e; // Re-throw known errors
+    }
+    logger.error('Sheets', `Couldn't get feedback: ${e.message}`, { username, taskNumber });
+    throw new Error(`Failed to load feedback data`);
   }
-
 };
 
 const submitTask = async (track, author, taskNumber, dateStr, url, isLate = false) => {

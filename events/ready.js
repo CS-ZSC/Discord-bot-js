@@ -6,12 +6,18 @@ const schedule = require("node-schedule");
 const leaderboard = require("../commands/leaderboard");
 const { prevMonthName } = require("../helpers/utils");
 const { credentials } = require("../auth/google");
+const { initLogger, info } = require("../helpers/logger");
 
 module.exports = {
     name: "ready",
     once: true,
     async execute(client) {
         console.log("bot online");
+        
+        // Initialize the logger
+        await initLogger(client);
+        info('Bot', 'Bot is now online and ready!');
+        
         client.user.setActivity('& Sleeping');
         new WOKCommands(client, {
             commandsDir: path.join(__dirname, "../commands"),

@@ -7,6 +7,7 @@ const { client } = require("../../main");
 const { alreadyDone } = require("../aleadyDone");
 const { doesTaskExists } = require("../sheets");
 const { getKeyByValue } = require("../utils");
+const logger = require("../logger");
 
 const POINTS_PER_DAY = config.points.tasks.pointsPerDay;
 const BONUS = config.points.tasks.bonus;
@@ -34,7 +35,7 @@ const calculateTaskPoints = (startDate, endDate, submitDate) => {
 };
 
 const doneTask = async (message) => {
-    console.log(`[DoneTask] Processing message from ${message.author.username} in ${message.channel.name}`);
+    logger.info('DoneTask', `Processing message from ${message.author.username} in ${message.channel.name}`);
 
     let taskDetails; // Declare taskDetails outside the try block
     //Get the parent channel of the thread
@@ -42,13 +43,13 @@ const doneTask = async (message) => {
 
     //Get the task number from the name of the thread "Done Task-<taskNumber>"
     const taskNumber = parseInt(message.channel.name.split("-")[1]);
-    console.log(`[DoneTask] Extracted task number: ${taskNumber}`);
+    logger.debug('DoneTask', `Extracted task number: ${taskNumber}`);
 
 
     //Get the track from the config file
     const track = getKeyByValue(config.finishTaskChannel, doneChannel.id);
     if (!track) {
-        console.warn(`[DoneTask] Track not found for channel ${doneChannel.id}`);
+        logger.warn('DoneTask', `Track not found for channel ${doneChannel.id}`);
         console.log("User entered Done Task in wrong channels, or config.json is incorrect");
         message.reply('You entered Done Task in wrong channels')
             .then(msg => {
@@ -59,7 +60,7 @@ const doneTask = async (message) => {
         message.delete();
         return
     }
-    console.log(`[DoneTask] Track identified: ${track}`);
+    logger.debug('DoneTask', `Track identified: ${track}`);
 
     const author = message.author;
     const date = new Date(message.createdTimestamp);
@@ -71,7 +72,7 @@ const doneTask = async (message) => {
     try {
         taskDetails = await getTask(track, taskNumber);
     } catch (e) {
-        console.error(`[DoneTask] Task retrieval failed: ${e.message}`);
+        logger.error('DoneTask', `Task retrieval failed: ${e.message}`);
         console.log("Task doesn't exist in the spreadsheet");
         message.reply('Task doesn\'t exist in the spreadsheet')
             .then(msg => {
@@ -83,7 +84,7 @@ const doneTask = async (message) => {
     }
 
     if (await alreadyDone(track, author, taskNumber)) {
-        await console.log(`[DoneTask] User ${author.username} already done task ${taskNumber}`);
+        logger.warn('DoneTask', `User ${author.username} already done task ${taskNumber}`);
         message.reply('User have already done this task')
             .then(msg => {
                 setTimeout(() => msg.delete(), 4000)
@@ -101,7 +102,7 @@ const doneTask = async (message) => {
 
     if (await insertTaskDone(track, author, taskNumber, sheetDateStr, isLate)) {
         const taskPoints = calculateTaskPoints(new Date(taskDetails.startingDate), endDate, submitDate);
-        console.log(`[DoneTask] Points calculated: ${taskPoints}`);
+        logger.info('DoneTask', `User ${author.username} completed Task ${taskNumber}. Points: ${taskPoints}`, { isLate });
         await addPointsTo.addPointsTo(author, taskPoints);
         console.log(`[DoneTask] Added ${taskPoints} to ${author}`)
         
@@ -110,7 +111,7 @@ const doneTask = async (message) => {
         try {
             await message.delete();
         } catch (e) {
-            console.error(`[DoneTask] Failed to delete message: ${e}`);
+            logger.error('DoneTask', `Failed to delete message: ${e.message}`);
         }
     }
 };

@@ -1,5 +1,6 @@
 const addPointsTo = require('../helpers/addPoints/index');
 const config = require('../config.json');
+const logger = require('../helpers/logger');
 
 module.exports = {
   name: "messageCreate",
@@ -9,6 +10,7 @@ module.exports = {
       return;
     }
     if (config.points.engagement.extraChannels.includes(message.channelId)) {
+      logger.debug('Event/EngagementPoints', `Extra points for ${message.author.username} in channel ${message.channelId}`);
       await addPointsTo.addPointsTo(message.author, parseInt(config.points.engagement.extra));
     }
     else {

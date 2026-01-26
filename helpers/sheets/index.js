@@ -1,6 +1,7 @@
 const { GoogleSpreadsheet } = require("google-spreadsheet");
 const { decryptToString } = require("../../auth/secure-file");
 const { JWT } = require('google-auth-library');
+const logger = require("../logger");
 require("dotenv").config();
 
 /**
@@ -21,10 +22,10 @@ const connect = async () => {
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID, jwt);
 
     await doc.loadInfo(); // loads document properties and worksheets
-    console.log(`[Sheets] Connected to ${doc.title}`);
+    logger.debug('Sheets', `Connected to ${doc.title}`);
     return doc;
   } catch (err) {
-    console.error(`[Sheets] Couldn't connect to Google Spreadsheet: ${err.toString()}`)
+    logger.error('Sheets', `Couldn't connect to Google Spreadsheet: ${err.toString()}`);
   }
 };
 
@@ -35,11 +36,11 @@ const connect = async () => {
  */
 const getSheet = async (sheetName) => {
   try {
-    console.log(`[Sheets] Getting sheet: ${sheetName}`);
+    logger.debug('Sheets', `Getting sheet: ${sheetName}`);
     const doc = await connect();
     return doc.sheetsByTitle[sheetName];
   } catch (err) {
-    console.error(`[Sheets] Couldn't get the sheet '${sheetName}': ${err.toString()}`)
+    logger.error('Sheets', `Couldn't get the sheet '${sheetName}': ${err.toString()}`);
   }
 };
 
@@ -64,12 +65,12 @@ const isEmpty = (val) => val === undefined || val === null || val === '';
  * @returns {object} The user row
  */
 const getUser = async (track, username) => {
-  console.log(`[Sheets] Getting user ${username} in track ${track}`);
+  logger.debug('Sheets', `Getting user ${username} in track ${track}`);
   const sheet = await getSheet(track);
   const rows = await sheet.getRows();
   const res = rows.find((row) => row._rawData[2] === username);
   if (!res) {
-    console.warn(`[Sheets] User ${username} not found in ${track}`);
+    logger.warn('Sheets', `User ${username} not found in ${track}`);
     throw new Error("Couldn't find the user in the spreadsheet")
     return -1;
   }
@@ -86,7 +87,7 @@ const getUser = async (track, username) => {
 
 const getTask = async (track, task) => {
   try {
-    console.log(`[Sheets] Getting task ${task} for track ${track}`);
+    logger.debug('Sheets', `Getting task ${task} for track ${track}`);
 
     const sheet = await getSheet(`${track}_DL`);
     const task_row = task;
@@ -102,7 +103,7 @@ const getTask = async (track, task) => {
     const endDate = sheet.getCell(task_row, task_col + 2).value;
 
     if (isEmpty(endDate) || isEmpty(startDate) || isEmpty(taskCell)) {
-      console.warn(`[Sheets] Task ${task} in ${track} has missing data`);
+      logger.warn('Sheets', `Task ${task} in ${track} has missing data`);
       throw new Error(`This task doesn't exist yet`);
     }
 
@@ -113,13 +114,13 @@ const getTask = async (track, task) => {
       endingDate: endDate,
     };
   } catch (err) {
-    console.error(`[Sheets] Couldn't get the task ${task} in ${track}: ${err.toString()}`)
+    logger.error('Sheets', `Couldn't get the task ${task} in ${track}: ${err.toString()}`)
   }
 };
 
 const insertTaskDone = async (track, author, taskNumber, dateStr, isLate = false) => {
   try {
-    console.log(`[Sheets] Inserting task done: ${track}, User: ${author.username}, Task: ${taskNumber}, Date: ${dateStr}, Late: ${isLate}`);
+    logger.info('Sheets', `Inserting task done: ${track}, User: ${author.username}, Task: ${taskNumber}`, { isLate });
     const userRow = await getUser(track, author.username);
 
     if (userRow === -1 || userRow === '') {
@@ -149,10 +150,10 @@ const insertTaskDone = async (track, author, taskNumber, dateStr, isLate = false
       }
     }
 
-    console.log(`[Sheets] Task ${taskNumber} marked as done for ${author.username}`);
+    logger.info('Sheets', `Task ${taskNumber} marked as done for ${author.username}`);
     return true;
   } catch (err) {
-    console.error(`[Sheets] Error marking user ${author.username} done task ${taskNumber}: ${err}`);
+    logger.error('Sheets', `Error marking user ${author.username} done task ${taskNumber}: ${err}`);
   }
 };
 
@@ -163,7 +164,7 @@ const insertTaskDone = async (track, author, taskNumber, dateStr, isLate = false
  * @param {string} track - The track of the user
  */
 const userDoneTask = async (taskNumber, author, track) => {
-  console.log(`[Sheets] Checking if user ${author.username} done task ${taskNumber} in ${track}`);
+  logger.debug('Sheets', `Checking if user ${author.username} done task ${taskNumber} in ${track}`);
   try {
     const userRow = await getUser(track, author.username);
 
@@ -174,11 +175,11 @@ const userDoneTask = async (taskNumber, author, track) => {
 
     const cellValue = userRow.get(`Task_${taskNumber}`);
     const isDone = !isEmpty(cellValue);
-    console.log(`[Sheets] Task_${taskNumber} value for user ${author.username}: ${cellValue}`);
-    console.log(`[Sheets] User ${author.username} done task ${taskNumber}? ${isDone}`);
+    logger.debug('Sheets', `Task_${taskNumber} value for user ${author.username}: ${cellValue}`);
+    logger.debug('Sheets', `User ${author.username} done task ${taskNumber}? ${isDone}`);
     return isDone;
   } catch (err) {
-    console.error(`[Sheets] Error checking user done task: ${err}`);
+    logger.error('Sheets', `Error checking user done task: ${err}`);
   }
 };
 
@@ -236,7 +237,7 @@ const getTaskFeedback = async (track, username, taskNumber) => {
 
 const submitTask = async (track, author, taskNumber, dateStr, url, isLate = false) => {
   try {
-    console.log(`[Sheets] Submitting task: ${track}, User: ${author.username}, Task: ${taskNumber}, URL: ${url}, Late: ${isLate}`);
+    logger.info('Sheets', `Submitting task: ${track}, User: ${author.username}, Task: ${taskNumber}`, { url, isLate });
     const userRow = await getUser(track, author.username);
 
     if (userRow === -1 || userRow === '') {
@@ -245,13 +246,11 @@ const submitTask = async (track, author, taskNumber, dateStr, url, isLate = fals
 
     userRow.set(`Task_${taskNumber}`, isLate ? `**Late Submission**\n${url}` : `${url}`)
     await userRow.save()
-
    
-
-    console.log(`[Sheets] Task ${taskNumber} submitted for ${author.username}`);
+    logger.info('Sheets', `Task ${taskNumber} submitted for ${author.username}`);
     return true;
   } catch (err) {
-    console.error(`[Sheets] Error submitting user task: ${err}`);
+    logger.error('Sheets', `Error submitting user task: ${err}`);
     throw err;
   }
 };

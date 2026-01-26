@@ -2,6 +2,7 @@ const card = require("../helpers/levelCard");
 const announce = require("../helpers/announce");
 const addPointsTo = require("../helpers/addPoints");
 const { writeFileSync } = require("fs");
+const logger = require("../helpers/logger");
 
 module.exports = {
     name: "points",
@@ -9,7 +10,7 @@ module.exports = {
     category: "Points",
     description: "Get your points",
     callback: async ({ interaction, user }) => {
-        console.log(`[Command/Points] User: ${user.username}`);
+        logger.info('Command/Points', `User: ${user.username}`);
         interaction.reply({
             content: "Working on it", ephemeral: true,
         });
@@ -25,15 +26,15 @@ module.exports = {
                         files: [{ attachment: buffer }],
                         ephemeral: true,
                     });
-                    console.log(`[Command/Points] Rank card sent to ${user.username}`);
+                    logger.info('Command/Points', `Rank card sent to ${user.username}`);
                 } else {
-                    console.error("[Command/Points] Failed to generate rank image: Buffer is empty.");
+                    logger.error('Command/Points', `Failed to generate rank image: Buffer is empty.`);
                 }
             } else {
-                console.error("[Command/Points] Rank object is invalid or missing a 'build' method.");
+                logger.error('Command/Points', `Rank object is invalid or missing a 'build' method.`);
             }
         } catch (error) {
-            console.error("[Command/Points] An error occurred:", error);
+            logger.error('Command/Points', `An error occurred: ${error.message}`, error);
         }
     }
 

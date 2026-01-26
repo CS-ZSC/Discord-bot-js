@@ -62,8 +62,9 @@ client.once('ready', async () => {
             ),
             serverInfo: {
                 GUILD_ID: guild_id,
-                announcements_id: guild.channels.cache.find(channel => channel.name === "bot-announcements").id,
-                leaderboard_id: guild.channels.cache.find(channel => channel.name === "leaderboard").id,
+                announcements_id: guild.channels.cache.find(channel => channel.name === "bot-announcements")?.id || "",
+                leaderboard_id: guild.channels.cache.find(channel => channel.name === "leaderboard")?.id || "",
+                logs_channel_id: guild.channels.cache.find(channel => channel.name === "logs")?.id || "",
             },
             points: {
                 engagement: {

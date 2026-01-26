@@ -5,6 +5,7 @@ const { getTask, submitTask, userDoneTask } = require('../helpers/sheets');
 const { generateDateString } = require("../helpers/time/handlers");
 const addPointsTo = require("../helpers/addPoints");
 const { calculateTaskPoints } = require("../helpers/doneTask");
+const logger = require("../helpers/logger");
 
 module.exports = {
     name: "submit",
@@ -20,7 +21,7 @@ module.exports = {
     ],
     slash: true,
     callback: async ({ interaction }) => {
-        console.log(`[Command/Submit] Triggered by ${interaction.user.username}`);
+        logger.info('Command/Submit', `Triggered by ${interaction.user.username}`);
         // Make the interaction response ephemeral (private) by default for errors/status
         await interaction.deferReply({ ephemeral: true });
         const url = interaction.options.getString('url');
@@ -30,28 +31,28 @@ module.exports = {
         try {
             new URL(url);
         } catch (_) {
-            console.warn(`[Command/Submit] Invalid URL provided: ${url}`);
+            logger.warn('Command/Submit', `Invalid URL provided: ${url}`);
             return interaction.editReply("Please provide a valid URL (e.g., https://example.com).");
         }
 
         try {
             const doneChannel = await getParentChannel(interaction.channelId);
-            console.log(`[Command/Submit] Parent channel: ${doneChannel?.name} (${doneChannel?.id})`);
+            logger.debug('Command/Submit', `Parent channel: ${doneChannel?.name} (${doneChannel?.id})`);
 
             if (!interaction.channel.name.includes("Done Task-")) {
-                console.warn(`[Command/Submit] Invalid channel: ${interaction.channel.name}`);
+                logger.warn('Command/Submit', `Invalid channel: ${interaction.channel.name}`);
                 return interaction.editReply("This command can only be used in 'Done Task' threads.");
             }
 
             const taskNumber = parseInt(interaction.channel.name.split("-")[1]);
-            console.log(`[Command/Submit] Task Number: ${taskNumber}`);
+            logger.debug('Command/Submit', `Task Number: ${taskNumber}`);
 
             const track = getKeyByValue(config.finishTaskChannel, doneChannel.id);
             if (!track) {
-                console.error(`[Command/Submit] Track configuration missing for channel ${doneChannel.id}`);
+                logger.error('Command/Submit', `Track configuration missing for channel ${doneChannel.id}`);
                 return interaction.editReply('You entered Done Task in wrong channels, or config.json is incorrect');
             }
-            console.log(`[Command/Submit] Track: ${track}`);
+            logger.debug('Command/Submit', `Track: ${track}`);
 
             const date = new Date(interaction.createdTimestamp);
             // Convert to Cairo time (handles DST automatically)
@@ -62,12 +63,12 @@ module.exports = {
             try {
                 taskDetails = await getTask(track, taskNumber);
             } catch (e) {
-                console.error(`[Command/Submit] Task details not found: ${e.message}`);
+                logger.error('Command/Submit', `Task details not found: ${e.message}`);
                 return interaction.editReply("Task doesn't exist in the spreadsheet");
             }
 
             const isResubmission = await userDoneTask(taskNumber, author, track);
-            console.log(`[Command/Submit] Is Resubmission? ${isResubmission}`);
+            logger.debug('Command/Submit', `Is Resubmission? ${isResubmission}`);
 
             const submitDate = new Date(dateStr);
             const endDate = new Date(taskDetails.endingDate);
@@ -76,7 +77,7 @@ module.exports = {
 
             // If it's a late resubmission, do not update the sheet
             if (isResubmission && isLate) {
-                console.log(`[Command/Submit] Late resubmission for ${author.username}. Sheet not updated.`);
+                logger.info('Command/Submit', `Late resubmission for ${author.username}. Sheet not updated.`);
                 await interaction.editReply(`Task ${taskNumber} resubmission is **late**. You cannot resubmit the task after deadline: \`${taskDetails.endingDate}\`.`);
                 return;
             }
@@ -86,14 +87,14 @@ module.exports = {
             await submitTask(track, author, taskNumber, sheetDateStr, url, isLate);
 
             if (isResubmission) {
-                console.log(`[Command/Submit] Resubmission successful for ${author.username}`);
+                logger.info('Command/Submit', `Resubmission successful for ${author.username}`);
                 // Private confirmation
                 await interaction.editReply(`Task ${taskNumber} resubmitted successfully! Link updated.${lateMessage}`);
                 // Public announcement
                 await interaction.channel.send(`${author} has resubmitted **Task ${taskNumber}** at \`${dateStr}\`.${lateMessage}`);
             } else {
                 const taskPoints = calculateTaskPoints(new Date(taskDetails.startingDate), endDate, submitDate);
-                console.log(`[Command/Submit] Points calculated: ${taskPoints}`);
+                logger.info('Command/Submit', `User ${author.username} submitted Task ${taskNumber}. Points: ${taskPoints}`);
                 await addPointsTo.addPointsTo(author, taskPoints);
 
                 // Private confirmation
@@ -103,7 +104,7 @@ module.exports = {
             }
 
         } catch (error) {
-            console.error(`[Command/Submit] Error: ${error}`);
+            logger.error('Command/Submit', `Error: ${error.message}`, error);
             await interaction.editReply({ content: `An error occurred: Please contact an administrator.`, ephemeral: true });
         }
     },

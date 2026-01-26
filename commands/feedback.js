@@ -43,7 +43,7 @@ module.exports = {
         try {
             const feedback = await getTaskFeedback(track, username, taskNumber);
             const trackName = track.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
+            
             logger.info('Command/Feedback', `Feedback delivered`, { username, track, taskNumber });
 
             await interaction.editReply({
@@ -53,7 +53,7 @@ module.exports = {
                     fields: [
                         { name: "Track", value: trackName, inline: true },
                         { name: "Task", value: `#${taskNumber}`, inline: true },
-                        { name: "Feedback", value: feedback, inline: true }
+                        { name: "Feedback", value: feedback, inline: false }
                     ],
                     footer: { text: "Keep up the great work! 🚀" },
                     timestamp: new Date().toISOString(),

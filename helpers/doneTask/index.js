@@ -14,18 +14,17 @@ const BONUS = config.points.tasks.bonus;
 
 const calculateTaskPoints = (startDate, endDate, submitDate) => {
     if (submitDate > endDate) {
-        // Late submission penalty: 50% of the base points
         const duration = (endDate - startDate) / 1000;
         let days = duration / (24 * 60 * 60);
-        days = Math.max(days, 2);     //Min score is 2 * Points per day
+        days = Math.max(days, 2);
         const taskPointsIntial = days * POINTS_PER_DAY;
-        const points = taskPointsIntial * 0.5; // 50% penalty
+        const points = taskPointsIntial * 0.5;
         return parseInt(points);
     }
     const durationFromEnd = (endDate - submitDate) / 1000;
     const duration = (endDate - startDate) / 1000;
     let days = duration / (24 * 60 * 60);
-    days = Math.max(days, 2);     //Min score is 2 * Points per day
+    days = Math.max(days, 2);
     const taskPointsIntial = days * POINTS_PER_DAY;
     let points = taskPointsIntial * (1 + durationFromEnd * BONUS / (duration / 2));
     points = Math.min(points, taskPointsIntial * (1 + BONUS));
@@ -35,61 +34,45 @@ const calculateTaskPoints = (startDate, endDate, submitDate) => {
 };
 
 const doneTask = async (message) => {
-    logger.info('DoneTask', `Processing message from ${message.author.username} in ${message.channel.name}`);
+    const author = message.author;
+    const channelName = message.channel.name;
+    
+    logger.info('DoneTask', `Processing 'done' message`, { user: author.username, channel: channelName });
 
-    let taskDetails; // Declare taskDetails outside the try block
-    //Get the parent channel of the thread
-    const doneChannel = await getParentChannel(message.channelId)
+    let taskDetails;
+    const doneChannel = await getParentChannel(message.channelId);
+    const taskNumber = parseInt(channelName.split("-")[1]);
 
-    //Get the task number from the name of the thread "Done Task-<taskNumber>"
-    const taskNumber = parseInt(message.channel.name.split("-")[1]);
-    logger.debug('DoneTask', `Extracted task number: ${taskNumber}`);
-
-
-    //Get the track from the config file
     const track = getKeyByValue(config.finishTaskChannel, doneChannel.id);
     if (!track) {
-        logger.warn('DoneTask', `Track not found for channel ${doneChannel.id}`);
-        console.log("User entered Done Task in wrong channels, or config.json is incorrect");
+        logger.warn('DoneTask', `Invalid channel for done message`, { user: author.username, channelId: doneChannel.id });
         message.reply('You entered Done Task in wrong channels')
-            .then(msg => {
-                setTimeout(() => msg.delete(), 2000)
-            })
-            .catch(console.error);
+            .then(msg => setTimeout(() => msg.delete(), 2000))
+            .catch(err => logger.error('DoneTask', `Failed to reply`, { error: err.message }));
         setTimeout(() => message.delete(), 3000);
-        message.delete();
-        return
+        return;
     }
-    logger.debug('DoneTask', `Track identified: ${track}`);
 
-    const author = message.author;
     const date = new Date(message.createdTimestamp);
-    // Convert to Cairo time (handles DST automatically)
     const localDate = new Date(date.toLocaleString("en-US", { timeZone: "Africa/Cairo" }));
     const dateStr = generateDateString(localDate);
 
-    //Check if the task exists
     try {
         taskDetails = await getTask(track, taskNumber);
     } catch (e) {
-        logger.error('DoneTask', `Task retrieval failed: ${e.message}`);
-        console.log("Task doesn't exist in the spreadsheet");
+        logger.warn('DoneTask', `Task not found`, { user: author.username, track, taskNumber });
         message.reply('Task doesn\'t exist in the spreadsheet')
-            .then(msg => {
-                setTimeout(() => msg.delete(), 2000)
-            })
-            .catch(console.error);
+            .then(msg => setTimeout(() => msg.delete(), 2000))
+            .catch(err => logger.error('DoneTask', `Failed to reply`, { error: err.message }));
         setTimeout(() => message.delete(), 3000);
         return;
     }
 
     if (await alreadyDone(track, author, taskNumber)) {
-        logger.warn('DoneTask', `User ${author.username} already done task ${taskNumber}`);
+        logger.warn('DoneTask', `Duplicate submission attempt`, { user: author.username, track, taskNumber });
         message.reply('User have already done this task')
-            .then(msg => {
-                setTimeout(() => msg.delete(), 4000)
-            })
-            .catch(console.error);
+            .then(msg => setTimeout(() => msg.delete(), 4000))
+            .catch(err => logger.error('DoneTask', `Failed to reply`, { error: err.message }));
         setTimeout(() => message.delete(), 5000);
         return;
     }
@@ -102,16 +85,23 @@ const doneTask = async (message) => {
 
     if (await insertTaskDone(track, author, taskNumber, sheetDateStr, isLate)) {
         const taskPoints = calculateTaskPoints(new Date(taskDetails.startingDate), endDate, submitDate);
-        logger.info('DoneTask', `User ${author.username} completed Task ${taskNumber}. Points: ${taskPoints}`, { isLate });
-        await addPointsTo.addPointsTo(author, taskPoints);
-        console.log(`[DoneTask] Added ${taskPoints} to ${author}`)
         
+        logger.info('DoneTask', `Task completed successfully`, { 
+            user: author.username, 
+            track, 
+            taskNumber, 
+            points: taskPoints, 
+            isLate,
+            submittedAt: dateStr
+        });
+        
+        await addPointsTo.addPointsTo(author, taskPoints);
         await message.channel.send(`${author} has submitted **Task ${taskNumber}** at \`${dateStr}\` and earned **${taskPoints}** points!${lateMessage}`);
         
         try {
             await message.delete();
         } catch (e) {
-            logger.error('DoneTask', `Failed to delete message: ${e.message}`);
+            logger.warn('DoneTask', `Failed to delete user message`, { user: author.username, error: e.message });
         }
     }
 };

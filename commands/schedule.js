@@ -41,26 +41,23 @@ module.exports = {
     ],
     slash: true,
     callback: async ({ interaction }) => {
-
-        logger.info('Command/Scheduler', `Args: ${args}, User: ${interaction.user.username}`);
+        const user = interaction.user.username;
+        logger.info('Command/Scheduler', `User ${user} scheduling a task`);
+        
         try {
-            // Send an initial response or defer the reply
             await interaction.deferReply({ ephemeral: true });
 
             const dateStr = interaction.options.getString('date');
             const track = interaction.options.getString('track');
             const duration = interaction.options.getString('duration');
             const task = interaction.options.getString('task');
-            const submissionType = interaction.options.getString('submission_type');
 
-            // Parse date string DD/MM HH:mm
             const datePattern = /^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{1,2})$/;
             const match = dateStr.match(datePattern);
 
             if (!match) {
-                await interaction.editReply({
-                    content: `Invalid date format. Please use DD/MM HH:mm (e.g. 25/12 14:30)`,
-                });
+                logger.warn('Command/Scheduler', `Invalid date format`, { dateStr, user });
+                await interaction.editReply({ content: `Invalid date format. Please use DD/MM HH:mm (e.g. 25/12 14:30)` });
                 return;
             }
 
@@ -70,63 +67,37 @@ module.exports = {
             const minute = parseInt(match[4]);
             const year = new Date().getFullYear();
 
-            // Calculate the duration
             const nowDate = new Date();
-
-            // Construct the target date assuming inputs are UTC first
             const targetTimeUTC = new Date(Date.UTC(year, month - 1, day, hour, minute, 0, 0));
-
-            // Calculate Cairo offset dynamically
             const cairoTimeString = targetTimeUTC.toLocaleString("en-US", { timeZone: "Africa/Cairo" });
             const cairoDateLocal = new Date(cairoTimeString);
-
-            // Convert the local face values to UTC timestamp to calculate the shift
             const cairoDateUTC = new Date(Date.UTC(
-                cairoDateLocal.getFullYear(),
-                cairoDateLocal.getMonth(),
-                cairoDateLocal.getDate(),
-                cairoDateLocal.getHours(),
-                cairoDateLocal.getMinutes(),
-                cairoDateLocal.getSeconds()
+                cairoDateLocal.getFullYear(), cairoDateLocal.getMonth(), cairoDateLocal.getDate(),
+                cairoDateLocal.getHours(), cairoDateLocal.getMinutes(), cairoDateLocal.getSeconds()
             ));
-
-            // Offset = Cairo Time - UTC Time
             const offset = cairoDateUTC.getTime() - targetTimeUTC.getTime();
-
-            // Adjust target time: we want the moment when Cairo Time equals the Input Time.
             const date = new Date(targetTimeUTC.getTime() - offset);
 
             if (date < nowDate) {
-                logger.warn('Command/Scheduler', `Invalid date provided: ${date}`);
-                await interaction.editReply({
-                    content: `Please enter a valid future date`,
-                });
+                logger.warn('Command/Scheduler', `Past date provided`, { date, user });
+                await interaction.editReply({ content: `Please enter a valid future date` });
                 return;
             }
 
-            logger.info('Command/Scheduler', `Scheduling job for ${date}`);
-            const deadlineArgs = [track, duration, task, submissionType];
+            const deadlineArgs = [track, duration, task];
 
-            // Set the time at which the deadline will be announced
-            const job = schedule.scheduleJob(date, async () => {
-                logger.info('Command/Scheduler', `Executing scheduled job for ${date}`);
-                await deadline.callback({
-                    interaction: interaction,
-                    args: deadlineArgs,
-                });
+            schedule.scheduleJob(date, async () => {
+                logger.info('Command/Scheduler', `Executing scheduled deadline`, { track, task, scheduledBy: user });
+                await deadline.callback({ interaction, args: deadlineArgs });
             });
 
-            // Edit the reply if needed
-            await interaction.editReply({
-                content: `Scheduled task ${task} for ${track} at ${date.toLocaleString("en-US", { timeZone: "Africa/Cairo" })} (Cairo Time)`,
-            });
+            const cairoDisplayTime = date.toLocaleString("en-US", { timeZone: "Africa/Cairo" });
+            logger.info('Command/Scheduler', `Task scheduled`, { track, task, scheduledFor: cairoDisplayTime, scheduledBy: user });
+            
+            await interaction.editReply({ content: `Scheduled task ${task} for ${track} at ${cairoDisplayTime} (Cairo Time)` });
         } catch (error) {
-            logger.error('Command/Scheduler', `Error: ${error}`);
-            // Handle errors appropriately
-            await interaction.followUp({
-                content: `There was an error while executing this command!`,
-                ephemeral: true,
-            });
+            logger.error('Command/Scheduler', `Scheduling failed`, { user, error: error.message });
+            await interaction.followUp({ content: `There was an error while executing this command!`, ephemeral: true });
         }
     },
 };

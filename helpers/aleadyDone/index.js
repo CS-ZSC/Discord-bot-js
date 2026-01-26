@@ -7,7 +7,8 @@ const logger = require("../logger");
 
 module.exports = {
   async alreadyDone(track, author, taskNumber) {
-      logger.debug('AlreadyDone', `Checking track: ${track}, user: ${author.username}, task: ${taskNumber}`);
-      return userDoneTask(taskNumber, author, track);
-}
+      const result = await userDoneTask(taskNumber, author, track);
+      logger.debug('AlreadyDone', `Check completed`, { user: author.username, track, taskNumber, isDone: result });
+      return result;
+  }
 }

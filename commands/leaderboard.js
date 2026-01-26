@@ -11,33 +11,34 @@ module.exports = {
   category: "Leaderboard",
   callback: async (interaction) => {
     const client = interaction.client;
-    logger.info('Command/Leaderboard', `Running. Interaction type: ${typeof interaction === 'string' ? interaction : 'Object'}`);
-    if (interaction !== "Bot fired") {
-      logger.debug('Command/Leaderboard', 'Interaction fired');
-    } else {
-      client.channels.cache.get(config.serverInfo.leaderboard_id).send("Leaderboard for month of " + new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('default', { month: 'long' }) + " are :");
+    const isBotFired = interaction === "Bot fired";
+    
+    logger.info('Command/Leaderboard', `Leaderboard requested`, { source: isBotFired ? 'scheduled' : 'user' });
+    
+    if (isBotFired) {
+      client.channels.cache.get(config.serverInfo.leaderboard_id).send(
+        "Leaderboard for month of " + new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('default', { month: 'long' }) + " are :"
+      );
     }
+    
     const leaderboard = await getLeaderboard();
-    logger.info('Command/Leaderboard', `Leaderboard fetched. Count: ${leaderboard.length}`);
+    logger.info('Command/Leaderboard', `Fetched ${leaderboard.length} entries`);
+    
     for (let rank = 0; rank < 10; ++rank) {
-      if (leaderboard.length <= rank) {
-        break;
-      }
+      if (leaderboard.length <= rank) break;
+      
       const user = await client.users.fetch(leaderboard[rank].userID);
       const RankCard = await card(user, rank + 1);
+      
       RankCard.build({ fontX: "Arial", fontY: "Arial" }).then((buffer) => {
-        if (interaction !== "Bot fired") {
-          interaction.channel.send({
-            files: [{ attachment: buffer }],
-          });
+        if (!isBotFired) {
+          interaction.channel.send({ files: [{ attachment: buffer }] });
         } else {
-          const channel = client.channels.cache.get(config.serverInfo.leaderboard_id);
-          channel.send({
-            files: [{ attachment: buffer }],
-          });
+          client.channels.cache.get(config.serverInfo.leaderboard_id).send({ files: [{ attachment: buffer }] });
         }
-        logger.debug('Command/Leaderboard', `Sent rank ${rank + 1}`);
-      }).catch(err => logger.error('Command/Leaderboard', `Error building card for rank ${rank + 1}: ${err}`));
+      }).catch(err => logger.error('Command/Leaderboard', `Card build failed for rank ${rank + 1}`, { error: err.message }));
     }
+    
+    logger.info('Command/Leaderboard', `Leaderboard display completed`);
   },
 };

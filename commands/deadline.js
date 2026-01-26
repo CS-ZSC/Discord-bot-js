@@ -40,35 +40,31 @@ module.exports = {
     slash: true,
     callback: async ({ interaction, args }) => {
         const client = interaction.client;
-        logger.info('Command/Deadline', `Args: ${args}, User: ${interaction.user.username}`);
+        const user = interaction.user.username;
+        
+        const track = args[0];
+        const duration = args[1];
+        const task = args[2];
+        
+        logger.info('Command/Deadline', `User ${user} creating deadline`, { track, duration, task });
 
         const member = interaction.member;
         if (!member?.permissions.has("ADMINISTRATOR")) {
+            logger.warn('Command/Deadline', `Unauthorized access attempt by ${user}`);
             interaction.reply({
                 content: "You don't have the permissions to run this command. Please, don't play",
                 ephemeral: true,
             });
+            return;
         }
 
         if (!interaction.replied) {
-            interaction.reply({
-                content: "Working on it",
-                ephemeral: true,
-            });
+            interaction.reply({ content: "Working on it", ephemeral: true });
         } else {
-            interaction.editReply({
-                content: "Working on it",
-            });
+            interaction.editReply({ content: "Working on it" });
         }
 
-        const track = args[0];
-        const duration = args[1];
-        const task = args[2];
-        logger.debug('Command/Deadline', `Track: ${track}, Duration: ${duration}, Task: ${task}`);
-
-        // Initializing start and end date
         const date = new Date();
-        // Convert to Cairo time (handles DST automatically)
         const localDate = new Date(date.toLocaleString("en-US", { timeZone: "Africa/Cairo" }));
 
         let startingDate = times.strDayFirstSecond(localDate);
@@ -76,16 +72,12 @@ module.exports = {
 
         let trackcol = -1;
         try {
-            // Get the sheet and load Its cells
             let sheet = await getSheet(`tasks`);
 
-            // WARNING: if you wan to increase the number of tracks, you should increase the number of columns that be checked here.
             for (let col = 0; col < 20; col++) {
                 await sheet.loadCells({
-                    startRowIndex: 0,
-                    endRowIndex: 1,
-                    startColumnIndex: col,
-                    endColumnIndex: col + 1
+                    startRowIndex: 0, endRowIndex: 1,
+                    startColumnIndex: col, endColumnIndex: col + 1
                 });
                 const cell = sheet.getCell(0, col);
                 if (cell.value === track) {
@@ -94,32 +86,30 @@ module.exports = {
                 }
             }
             if (trackcol === -1) {
-                logger.warn('Command/Deadline', `Track '${track}' not found in sheet headers`);
-                interaction.editReply({
-                    content: `Track not found`,
-                });
+                logger.warn('Command/Deadline', `Track not found in sheet`, { track, user });
+                interaction.editReply({ content: `Track not found` });
                 return;
             }
-            logger.debug('Command/Deadline', `Track column found at index ${trackcol}`);
+
             await sheet.loadCells({
-                startRowIndex: task,
-                endRowIndex: task + 1,
-                startColumnIndex: trackcol,
-                endColumnIndex: trackcol + 1
+                startRowIndex: task, endRowIndex: task + 1,
+                startColumnIndex: trackcol, endColumnIndex: trackcol + 1
             });
-            const contentCell = sheet.getCell(task, trackcol);
-            const content = await contentCell.value;
-            const doneChannelId = await config.tasksChannels[track];
-            const doneChannel = await client.channels.fetch(doneChannelId);
+            const content = await sheet.getCell(task, trackcol).value;
+            
             if (content === null || content === undefined || content === '') {
-                logger.warn('Command/Deadline', `Task content empty for task ${task} in track ${track}`);
+                logger.warn('Command/Deadline', `Task content empty`, { track, task, user });
                 interaction.editReply({ content: "please put your task in the designated area " });
                 return;
             }
+
+            const doneChannelId = await config.tasksChannels[track];
+            const doneChannel = await client.channels.fetch(doneChannelId);
+            
             const thread = await doneChannel.threads.create({
                 name: `Task-${task}`,
                 autoArchiveDuration: 60,
-                reason: 'Tread for task',
+                reason: 'Thread for task',
             });
 
             let instructionText = `**Instruction:** After finishing your task, please use the \`/submit <url>\` command in <#${config.finishTaskChannel[track]}> to submit your work.\n**Example:**\n\`\`\`\n/submit https://github.com/your-repo\`\`\``;
@@ -128,10 +118,8 @@ module.exports = {
                 content: `**Deadline:** ${endingDate}\n\n ${instructionText}  \n${content}`
             });
         } catch (e) {
-            logger.error('Command/Deadline', `Error processing task sheet: ${e}`);
-            interaction.editReply({
-                content: `Error updating the sheet, Mention a bot admin`,
-            });
+            logger.error('Command/Deadline', `Error processing task sheet`, { track, task, user, error: e.message });
+            interaction.editReply({ content: `Error updating the sheet, Mention a bot admin` });
             return;
         }
 
@@ -139,18 +127,15 @@ module.exports = {
         const thread = await finishedTaskChannel.threads.create({
             name: `Done Task-${task}`,
             autoArchiveDuration: 60,
-            reason: 'Tread for task',
+            reason: 'Thread for task',
         });
 
         await thread.send({ content: `After you finish the task, please use the \`/submit <url>\` command in this thread.\n**Example:**\n\`\`\`\n/submit https://github.com/your-repo\n\`\`\`` });
-        try {
-            // Get the sheet and load Its cells
-            let sheet = await getSheet(`${track}_DL`);
 
-            // Range is specified so things speeds up
+        try {
+            let sheet = await getSheet(`${track}_DL`);
             await sheet.loadCells("A1:C50");
 
-            // Get  cells to insert the task
             const taskNumberCell = sheet.getCell(task, 0);
             const startingDateCell = sheet.getCell(task, 1);
             const endingDateCell = sheet.getCell(task, 2);
@@ -158,31 +143,21 @@ module.exports = {
             startingDate = times.generateDateString(startingDate);
             endingDate = times.generateDateString(endingDate);
 
-            // insert the task
             taskNumberCell.value = task.toString();
             startingDateCell.value = startingDate;
             endingDateCell.value = endingDate;
 
-            // Commit the changes
             await sheet.saveUpdatedCells();
-            logger.info('Command/Deadline', `Sheet updated successfully for task ${task}`);
         } catch (e) {
-            logger.error('Command/Deadline', `Error updating deadline sheet: ${e}`);
-            interaction.editReply({
-                content: `Error updating the sheet, Mention a bot admin`,
-            });
+            logger.error('Command/Deadline', `Error updating deadline sheet`, { track, task, user, error: e.message });
+            interaction.editReply({ content: `Error updating the sheet, Mention a bot admin` });
             return;
         }
 
-        let mention = `<@&${track === 'science' ? config.roles.cs : config.roles[track]}>`
+        let mention = `<@&${track === 'science' ? config.roles.cs : config.roles[track]}>`;
+        announce.announce({ content: `${mention} You got a task from \`${startingDate}\` to \`${endingDate}\`` });
 
-        announce.announce({
-            content: `${mention} You got a task from \`${startingDate}\` to \`${endingDate}\``,
-        });
-
-        // interaction is provided only for a slash command
-        interaction.editReply({
-            content: `added ${task} in ${track} from \`${startingDate}\` to \`${endingDate}\``,
-        });
+        logger.info('Command/Deadline', `Deadline created successfully`, { track, task, startingDate, endingDate, createdBy: user });
+        interaction.editReply({ content: `added ${task} in ${track} from \`${startingDate}\` to \`${endingDate}\`` });
     }
 };

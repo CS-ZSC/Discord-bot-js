@@ -1,4 +1,4 @@
-https = require("https");
+const https = require("https");
 
 async function getBufferFromUrl(url) {
   return new Promise((resolve) => {
@@ -27,12 +27,8 @@ function getKeyByValue(object, value) {
 function prevMonthName() {
   const previousMonth = new Date();
   previousMonth.setMonth(previousMonth.getMonth() - 1);
-  const previousMonthName = previousMonth.toLocaleString('default', { month: 'long' });
-
-
+  return previousMonth.toLocaleString('default', { month: 'long' });
 }
-
-
 
 const _SCIENCE_XP = 5;
 let channelsPoints = {

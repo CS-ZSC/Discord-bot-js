@@ -1,4 +1,5 @@
 const {client} = require("../../main");
+const logger = require("../logger");
 
 
 module.exports = {
@@ -8,7 +9,14 @@ module.exports = {
      * @returns {object} the parent channel of the thread
      */
     getParentChannel: async function getParentChannel(threadId) {
-        const thread = await client.channels.fetch(threadId);
-        return await client.channels.fetch(thread.parentId);
+        try {
+            const thread = await client.channels.fetch(threadId);
+            const parent = await client.channels.fetch(thread.parentId);
+            logger.debug('GetParentChannel', `Resolved parent channel`, { threadId, parentId: parent.id, parentName: parent.name });
+            return parent;
+        } catch (err) {
+            logger.error('GetParentChannel', `Failed to get parent channel`, { threadId, error: err.message });
+            throw err;
+        }
     }
 }

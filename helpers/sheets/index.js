@@ -21,11 +21,11 @@ const connect = async () => {
     });
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID, jwt);
 
-    await doc.loadInfo(); // loads document properties and worksheets
-    logger.debug('Sheets', `Connected to ${doc.title}`);
+    await doc.loadInfo();
     return doc;
   } catch (err) {
-    logger.error('Sheets', `Couldn't connect to Google Spreadsheet: ${err.toString()}`);
+    logger.error('Sheets', `Connection failed`, { error: err.message });
+    throw err;
   }
 };
 
@@ -36,11 +36,15 @@ const connect = async () => {
  */
 const getSheet = async (sheetName) => {
   try {
-    logger.debug('Sheets', `Getting sheet: ${sheetName}`);
     const doc = await connect();
-    return doc.sheetsByTitle[sheetName];
+    const sheet = doc.sheetsByTitle[sheetName];
+    if (!sheet) {
+      logger.warn('Sheets', `Sheet not found`, { sheetName });
+    }
+    return sheet;
   } catch (err) {
-    logger.error('Sheets', `Couldn't get the sheet '${sheetName}': ${err.toString()}`);
+    logger.error('Sheets', `Failed to get sheet`, { sheetName, error: err.message });
+    throw err;
   }
 };
 
@@ -65,31 +69,38 @@ const isEmpty = (val) => val === undefined || val === null || val === '';
  * @returns {object} The user row
  */
 const getUser = async (track, username) => {
-  logger.debug('Sheets', `Getting user ${username} in track ${track}`);
-  const sheet = await getSheet(track);
-  const rows = await sheet.getRows();
-  const res = rows.find((row) => row._rawData[2] === username);
-  if (!res) {
-    logger.warn('Sheets', `User ${username} not found in ${track}`);
-    throw new Error("Couldn't find the user in the spreadsheet")
-    return -1;
+  try {
+    const sheet = await getSheet(track);
+    if (!sheet) {
+      logger.error('Sheets/GetUser', `Track sheet not found`, { track, user: username });
+      throw new Error(`Track '${track}' not found`);
+    }
+    
+    const rows = await sheet.getRows();
+    const res = rows.find((row) => row._rawData[2] === username);
+    
+    if (!res) {
+      logger.warn('Sheets/GetUser', `User not found in track`, { user: username, track });
+      throw new Error("Couldn't find the user in the spreadsheet");
+    }
+    
+    return res;
+  } catch (err) {
+    if (!err.message.includes("Couldn't find")) {
+      logger.error('Sheets/GetUser', `Failed to get user`, { user: username, track, error: err.message });
+    }
+    throw err;
   }
-  return res;
-
 };
-
-// const getUserPoints = async (userId) => {
-//   const sheet = await getSheet("points");
-//   const rows = await sheet.getRows();
-//   const columnName = "Discord Tag";
-//   return searchRows(rows, columnName, userId)[0];
-// };
 
 const getTask = async (track, task) => {
   try {
-    logger.debug('Sheets', `Getting task ${task} for track ${track}`);
-
     const sheet = await getSheet(`${track}_DL`);
+    if (!sheet) {
+      logger.error('Sheets/GetTask', `Deadline sheet not found`, { track, task });
+      throw new Error(`This task doesn't exist yet`);
+    }
+    
     const task_row = task;
     const task_col = 0;
     await sheet.loadCells({
@@ -98,12 +109,13 @@ const getTask = async (track, task) => {
       startColumnIndex: task_col,
       endColumnIndex: task_col + 3,
     });
+    
     const taskCell = sheet.getCell(task_row, task_col).value;
     const startDate = sheet.getCell(task_row, task_col + 1).value;
     const endDate = sheet.getCell(task_row, task_col + 2).value;
 
     if (isEmpty(endDate) || isEmpty(startDate) || isEmpty(taskCell)) {
-      logger.warn('Sheets', `Task ${task} in ${track} has missing data`);
+      logger.warn('Sheets/GetTask', `Task has missing data`, { track, task });
       throw new Error(`This task doesn't exist yet`);
     }
 
@@ -114,21 +126,21 @@ const getTask = async (track, task) => {
       endingDate: endDate,
     };
   } catch (err) {
-    logger.error('Sheets', `Couldn't get the task ${task} in ${track}: ${err.toString()}`)
+    if (!err.message.includes("doesn't exist")) {
+      logger.error('Sheets/GetTask', `Failed to get task`, { track, task, error: err.message });
+    }
+    throw err;
   }
 };
 
 const insertTaskDone = async (track, author, taskNumber, dateStr, isLate = false) => {
+  const username = author.username;
+  
   try {
-    logger.info('Sheets', `Inserting task done: ${track}, User: ${author.username}, Task: ${taskNumber}`, { isLate });
-    const userRow = await getUser(track, author.username);
+    const userRow = await getUser(track, username);
 
-    if (userRow === -1 || userRow === '') {
-      throw new Error("Couldn't find the author in the spreadsheet");
-    }
-
-    userRow.set(`Task_${taskNumber}`, `Done ${dateStr}`)
-    await userRow.save()
+    userRow.set(`Task_${taskNumber}`, `Done ${dateStr}`);
+    await userRow.save();
 
     if (isLate) {
       const sheet = userRow._worksheet;
@@ -137,7 +149,7 @@ const insertTaskDone = async (track, author, taskNumber, dateStr, isLate = false
       const columnIndex = headers.indexOf(`Task_${taskNumber}`);
 
       if (columnIndex !== -1) {
-        const rowIndex = userRow.rowIndex - 1; // 0-based index
+        const rowIndex = userRow.rowIndex - 1;
         await sheet.loadCells({
           startRowIndex: rowIndex,
           endRowIndex: rowIndex + 1,
@@ -145,15 +157,16 @@ const insertTaskDone = async (track, author, taskNumber, dateStr, isLate = false
           endColumnIndex: columnIndex + 1
         });
         const cell = sheet.getCell(rowIndex, columnIndex);
-        cell.backgroundColor = { red: 1, green: 0.8, blue: 0.8 }; // Light red background
+        cell.backgroundColor = { red: 1, green: 0.8, blue: 0.8 };
         await sheet.saveUpdatedCells();
       }
     }
 
-    logger.info('Sheets', `Task ${taskNumber} marked as done for ${author.username}`);
+    logger.info('Sheets/InsertTaskDone', `Task marked as done`, { user: username, track, taskNumber, isLate });
     return true;
   } catch (err) {
-    logger.error('Sheets', `Error marking user ${author.username} done task ${taskNumber}: ${err}`);
+    logger.error('Sheets/InsertTaskDone', `Failed to mark task done`, { user: username, track, taskNumber, error: err.message });
+    return false;
   }
 };
 
@@ -164,22 +177,18 @@ const insertTaskDone = async (track, author, taskNumber, dateStr, isLate = false
  * @param {string} track - The track of the user
  */
 const userDoneTask = async (taskNumber, author, track) => {
-  logger.debug('Sheets', `Checking if user ${author.username} done task ${taskNumber} in ${track}`);
+  const username = author.username;
+  
   try {
-    const userRow = await getUser(track, author.username);
-
-    if (userRow === -1) {
-      console.log();
-      throw new Error("Couldn't find the author in the spreadsheet")
-    }
+    const userRow = await getUser(track, username);
 
     const cellValue = userRow.get(`Task_${taskNumber}`);
     const isDone = !isEmpty(cellValue);
-    logger.debug('Sheets', `Task_${taskNumber} value for user ${author.username}: ${cellValue}`);
-    logger.debug('Sheets', `User ${author.username} done task ${taskNumber}? ${isDone}`);
+    
     return isDone;
   } catch (err) {
-    logger.error('Sheets', `Error checking user done task: ${err}`);
+    logger.error('Sheets/UserDoneTask', `Failed to check task status`, { user: username, track, taskNumber, error: err.message });
+    return false;
   }
 };
 
@@ -190,74 +199,62 @@ const userDoneTask = async (taskNumber, author, track) => {
  * @param {int} taskNumber - The task number
  */
 const getTaskFeedback = async (track, username, taskNumber) => {
-  logger.debug('Sheets', `Getting feedback for: "${username}", track: ${track}, taskNumber: ${taskNumber}`);
-  
-  const sheet = await getSheet(`${track}_FB`);
-  
-  if (!sheet) {
-    throw new Error(`Feedback sheet for track '${track}' not found`);
-  }
-
-  // Verify that the task exists
   try {
+    const sheet = await getSheet(`${track}_FB`);
+    
+    if (!sheet) {
+      logger.error('Sheets/GetTaskFeedback', `Feedback sheet not found`, { user: username, track });
+      throw new Error(`Feedback sheet for track '${track}' not found`);
+    }
+
+    // Verify that the task exists
     await getTask(track, taskNumber);
-  } catch (e) {
-    throw new Error(e.message);
-  }
 
-  // Check if the user has completed the task
-  let is_user_done = await userDoneTask(taskNumber, { username }, track);
-  logger.debug('Sheets', `User ${username} done task ${taskNumber}? ${is_user_done}`);
+    // Check if the user has completed the task
+    const is_user_done = await userDoneTask(taskNumber, { username }, track);
 
-  if (!is_user_done) {
-    throw new Error(`You didn't finish this task yet`);
-  }
+    if (!is_user_done) {
+      logger.warn('Sheets/GetTaskFeedback', `User hasn't completed task`, { user: username, track, taskNumber });
+      throw new Error(`You didn't finish this task yet`);
+    }
 
-  // Get the user row from the feedback sheet
-  const rows = await sheet.getRows();
-  const userRow = rows.find((row) => row._rawData[2] === username);
+    // Get the user row from the feedback sheet
+    const rows = await sheet.getRows();
+    const userRow = rows.find((row) => row._rawData[2] === username);
 
-  if (!userRow) {
-    throw new Error(`Looks like you are not in the ${track.replace(/_/g, ' ')} track`);
-  }
-  
-  try {
-    // Get feedback using the Task_N column header (consistent with other functions)
+    if (!userRow) {
+      logger.warn('Sheets/GetTaskFeedback', `User not found in feedback sheet`, { user: username, track });
+      throw new Error(`Looks like you are not in the ${track.replace(/_/g, ' ')} track`);
+    }
+    
     const feedbackColumnName = `Task_${taskNumber}`;
     const feedback = userRow.get(feedbackColumnName);
   
     if (isEmpty(feedback)) {
-      logger.debug('Sheets', `Feedback for task ${taskNumber} is empty for user ${username}`);
+      logger.info('Sheets/GetTaskFeedback', `Feedback not ready`, { user: username, track, taskNumber });
       throw new Error(`Looks like your feedback for task ${taskNumber} is not ready yet`);
     }
   
-    logger.debug('Sheets', `Feedback retrieved for ${username}, task ${taskNumber}`);
+    logger.info('Sheets/GetTaskFeedback', `Feedback retrieved`, { user: username, track, taskNumber });
     return feedback;
-  } catch (e) {
-    if (e.message.includes('not ready yet') || e.message.includes("didn't finish")) {
-      throw e; // Re-throw known errors
-    }
-    logger.error('Sheets', `Couldn't get feedback: ${e.message}`, { username, taskNumber });
-    throw new Error(`Failed to load feedback data`);
+  } catch (err) {
+      logger.error('Sheets/GetTaskFeedback', `Failed to get feedback`, { user: username, track, taskNumber, error: err.message });
   }
 };
 
 const submitTask = async (track, author, taskNumber, dateStr, url, isLate = false) => {
+  const username = author.username;
+  
   try {
-    logger.info('Sheets', `Submitting task: ${track}, User: ${author.username}, Task: ${taskNumber}`, { url, isLate });
-    const userRow = await getUser(track, author.username);
+    const userRow = await getUser(track, username);
 
-    if (userRow === -1 || userRow === '') {
-      throw new Error("Couldn't find the author in the spreadsheet");
-    }
-
-    userRow.set(`Task_${taskNumber}`, isLate ? `**Late Submission**\n${url}` : `${url}`)
-    await userRow.save()
+    userRow.set(`Task_${taskNumber}`, isLate ? `**Late Submission**\n${url}` : `${url}`);
+    await userRow.save();
    
-    logger.info('Sheets', `Task ${taskNumber} submitted for ${author.username}`);
+    logger.info('Sheets/SubmitTask', `Task submitted`, { user: username, track, taskNumber, isLate });
     return true;
   } catch (err) {
-    logger.error('Sheets', `Error submitting user task: ${err}`);
+    logger.error('Sheets/SubmitTask', `Failed to submit task`, { user: username, track, taskNumber, error: err.message });
     throw err;
   }
 };

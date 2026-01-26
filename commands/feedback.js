@@ -30,32 +30,25 @@ module.exports = {
         const task = args[1];
         const username = interaction.user.username;
 
-        logger.info('Command/Feedback', `Triggered by ${username}`, { track, task });
+        logger.info('Command/Feedback', `User ${username} requesting feedback`, { track, task });
 
-        // Defer reply to handle async operations
         await interaction.deferReply({ ephemeral: true });
 
-        // Validate task number
         const taskNumber = parseInt(task);
         if (isNaN(taskNumber) || taskNumber <= 0) {
-            logger.warn('Command/Feedback', `Invalid task number provided: ${task}`, { username });
-            return interaction.editReply({
-                content: "❌ Please provide a valid task number (positive integer).",
-            });
+            logger.warn('Command/Feedback', `Invalid task number`, { task, username });
+            return interaction.editReply({ content: "❌ Please provide a valid task number (positive integer)." });
         }
 
         try {
-            logger.debug('Command/Feedback', `Getting feedback for track: ${track}, task: ${taskNumber}, user: ${username}`);
             const feedback = await getTaskFeedback(track, username, taskNumber);
-
-            // Format the track name for display
             const trackName = track.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-            logger.info('Command/Feedback', `Feedback retrieved successfully for ${username}`, { track, taskNumber });
+            logger.info('Command/Feedback', `Feedback delivered`, { username, track, taskNumber });
 
             await interaction.editReply({
                 embeds: [{
-                    color: 0x00ff00, // Green
+                    color: 0x00ff00,
                     title: `📝 Feedback for Task ${taskNumber}`,
                     description: feedback,
                     fields: [
@@ -69,9 +62,8 @@ module.exports = {
 
         } catch (e) {
             const errorMessage = e.message || String(e);
-            logger.error('Command/Feedback', `Failed to get feedback: ${errorMessage}`, { track, task, username });
+            logger.warn('Command/Feedback', `Feedback retrieval failed`, { username, track, task, reason: errorMessage });
 
-            // Determine appropriate error response
             let userMessage = "❌ An error occurred while fetching your feedback.";
             
             if (errorMessage.includes("doesn't exist yet")) {
@@ -86,9 +78,7 @@ module.exports = {
                 userMessage = `⚠️ You are not registered in the **${track.replace(/_/g, ' ')}** track. Please contact an administrator.`;
             }
 
-            await interaction.editReply({
-                content: userMessage,
-            });
+            await interaction.editReply({ content: userMessage });
         }
     },
 };

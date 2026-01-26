@@ -3,7 +3,7 @@ const fs = require('fs');
 const { decryptToString } = require('../auth/secure-file');
 
 
-const { guild_id } = require("../server.json")
+const guild_id = process.env.GUILD_ID;
 
 
 

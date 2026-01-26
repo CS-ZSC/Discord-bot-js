@@ -6,10 +6,9 @@ module.exports = {
     name: "feedback",
     description: "Get your feedback for a specific task", // Required for slash commands
     category: "Feedback",
-
     options: [
         {
-            name: "track",
+            name: "track_name",
             description: "Choose the track of your feedback",
             required: true,
             type: 3,

@@ -5,3 +5,5 @@ helpers/sheets/creds.json
 confidential
 .creds.json
 .idea
+config.json
+server.json

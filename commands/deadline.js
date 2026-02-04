@@ -41,22 +41,12 @@ module.exports = {
     callback: async ({ interaction, args }) => {
         const client = interaction.client;
         const user = interaction.user.username;
-        
+
         const track = args[0];
         const duration = args[1];
         const task = args[2];
-        
-        logger.info('Command/Deadline', `User ${user} creating deadline`, { track, duration, task });
 
-        const member = interaction.member;
-        if (!member?.permissions.has("ADMINISTRATOR")) {
-            logger.warn('Command/Deadline', `Unauthorized access attempt by ${user}`);
-            interaction.reply({
-                content: "You don't have the permissions to run this command. Please, don't play",
-                ephemeral: true,
-            });
-            return;
-        }
+        logger.info('Command/Deadline', `User ${user} creating deadline`, { track, duration, task });
 
         if (!interaction.replied) {
             interaction.reply({ content: "Working on it", ephemeral: true });
@@ -96,7 +86,7 @@ module.exports = {
                 startColumnIndex: trackcol, endColumnIndex: trackcol + 1
             });
             const content = await sheet.getCell(task, trackcol).value;
-            
+
             if (content === null || content === undefined || content === '') {
                 logger.warn('Command/Deadline', `Task content empty`, { track, task, user });
                 interaction.editReply({ content: "please put your task in the designated area " });
@@ -105,7 +95,7 @@ module.exports = {
 
             const doneChannelId = await config.tasksChannels[track];
             const doneChannel = await client.channels.fetch(doneChannelId);
-            
+
             const thread = await doneChannel.threads.create({
                 name: `Task-${task}`,
                 autoArchiveDuration: 60,
